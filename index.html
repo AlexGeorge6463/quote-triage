@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QBC Quote Triage</title>
+<!-- Quote Triage: standalone prototype. All data is SYNTHETIC. MIT License, see LICENSE. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an ops console. Queue on the left, the selected object on the right, the ontology and action log below. Stacks to one column on phones. */
+:root {
+  --bg: #f3f4f2;
+  --panel: #ffffff;
+  --ink: #1d2422;
+  --muted: #5b6662;
+  --line: #d9ddd9;
+  --accent: #2d5f4a;      /* lacquered cabinet green */
+  --accent-soft: #e2ece7;
+  --book: #2d5f4a;
+  --info: #9a6b12;
+  --trade: #2f5a8a;
+  --out: #8a3b3b;
+  --chip-book: #e2ece7;
+  --chip-info: #f5ecd8;
+  --chip-trade: #e1e9f3;
+  --chip-out: #f3e2e2;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833;
+    --accent: #7fbf9f; --accent-soft: #23332c;
+    --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --out: #e09a9a;
+    --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-out: #3a2424;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833;
+  --accent: #7fbf9f; --accent-soft: #23332c;
+  --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --out: #e09a9a;
+  --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-out: #3a2424;
+  color-scheme: dark;
+}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: .01em; margin: 0; line-height: 1; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 62ch; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: var(--panel); }
+.badge.syn { border-color: var(--info); color: var(--info); }
+.lanes { display: flex; flex-wrap: wrap; gap: 8px; }
+.lane-btn { font: 500 13px var(--body); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.lane-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.lane-btn .n { font-family: var(--mono); color: var(--muted); }
+.lane-btn:focus-visible, .row:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.console { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .console { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.panel-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.panel-h h2 { font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: .02em; text-transform: uppercase; margin: 0; }
+.panel-h .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.queue { list-style: none; margin: 0; padding: 0; max-height: 640px; overflow-y: auto; }
+.row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.row:last-child { border-bottom: 0; }
+.row[aria-selected="true"] { background: var(--accent-soft); }
+.score { font-family: var(--display); font-weight: 700; font-size: 26px; text-align: right; font-variant-numeric: tabular-nums; }
+.who { min-width: 0; }
+.who b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who span { color: var(--muted); font-size: 12px; }
+.chip { font-family: var(--mono); font-size: 11px; padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+.chip.book { background: var(--chip-book); color: var(--book); }
+.chip.info { background: var(--chip-info); color: var(--info); }
+.chip.trade { background: var(--chip-trade); color: var(--trade); }
+.chip.out, .chip.order { background: var(--chip-out); color: var(--out); }
+.chip.done { background: var(--line); color: var(--muted); }
+.sla { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; margin-top: 3px; }
+.sla.late { color: var(--out); }
+.detail { padding: 14px; display: grid; gap: 16px; }
+.d-top { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: start; }
+.d-top h3 { font-family: var(--display); font-size: 26px; font-weight: 600; margin: 0; line-height: 1.1; }
+.d-top .id { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.props { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 16px; margin: 0; }
+.props div { min-width: 0; }
+.props dt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.props dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.miss { color: var(--info); }
+.section-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
+.bars { display: grid; gap: 6px; }
+.bar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 36px; gap: 10px; align-items: center; font-size: 13px; }
+@media (max-width: 480px) { .bar { grid-template-columns: 110px minmax(0, 1fr) 32px; } }
+.track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.fill { display: block; height: 100%; background: var(--accent); }
+.bar .v { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; }
+.obj { font-size: 13px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.obj i { font-style: normal; font-family: var(--mono); font-size: 11px; color: var(--muted); display: block; }
+.proposal { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
+.proposal p { margin: 0; }
+.proposal .why { color: var(--muted); font-size: 13px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: 600 13px var(--body); border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:disabled { opacity: .5; cursor: default; }
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.onto { padding: 14px; display: grid; gap: 12px; }
+.onto table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.onto th, .onto td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.onto th { font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+.onto td.n { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.tbl { overflow-x: auto; }
+.log { list-style: none; margin: 0; padding: 0 14px 14px; display: grid; gap: 6px; font-size: 13px; }
+.log li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.log time { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+.empty { color: var(--muted); padding: 14px; }
+.draft { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.funnel { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 12px 14px 4px; font-size: 13px; }
+.funnel .step { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-family: var(--mono); font-size: 12px; }
+.funnel .arrow { color: var(--muted); }
+footer { color: var(--muted); font-size: 12px; max-width: 80ch; }
+@media (prefers-reduced-motion: no-preference) { .fill { transition: width .4s ease; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>QBC Quote Triage</h1>
+      <p class="sub">Every incoming cabinet quote request gets scored, routed to a lane, and turned into a proposed action that a person approves. Built on Foundry's object, link and action model, so it ports straight in.</p>
+    </div>
+    <div class="badges">
+      <span class="badge syn">Synthetic data</span>
+      <span class="badge" id="clock">Sample clock · Mon Nov 9, 10:00 ET</span>
+    </div>
+  </header>
+
+  <div class="lanes" role="group" aria-label="Filter by lane" id="lanes"></div>
+
+  <div class="console">
+    <section class="panel" aria-label="Quote request queue">
+      <div class="panel-h"><h2>Queue</h2><span class="meta" id="qmeta"></span></div>
+      <ul class="queue" id="queue" role="listbox" aria-label="Quote requests"></ul>
+    </section>
+    <section class="panel" aria-live="polite" aria-label="Selected request">
+      <div class="panel-h"><h2>QuoteRequest</h2><span class="meta" id="dmeta"></span></div>
+      <div class="detail" id="detail"></div>
+    </section>
+  </div>
+
+  <div class="lower">
+    <section class="panel">
+      <div class="panel-h"><h2>Ontology</h2><span class="meta">objects · links · actions</span></div>
+      <div class="onto" id="onto"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Action log</h2><span class="meta" id="lmeta">0 approved</span></div>
+      <div class="funnel" id="funnel" aria-label="Funnel"></div>
+      <ul class="log" id="log"><li class="empty" style="display:block">No actions yet. Approve or send back a proposal to log it here.</li></ul>
+    </section>
+  </div>
+
+  <footer>
+    Rules come from verified QBC facts: supply only (no install), free in-home measure in Orange, Seminole, Osceola and Lake counties, callback within 24 hours, and order-taking (customer's own measurements) everywhere else. v2, Nov 12: four routing calls settled.
+    Lake County is inside the measure area, so Lake requests are scored like any other in-area request.
+    Every name and request here is SYNTHETIC. No real customer data is used.
+    Next step: the same object types, links and actions in Foundry (Ontology Manager, AIP Logic, Workshop) once Developer Tier access opens.
+  </footer>
+</div>
+
+<script>
+// SYNTHETIC sample data, labeled as such in the UI.
+const NOW = new Date('2026-11-09T10:00:00-05:00');
+// Measure area (confirmed by Alex, Nov 11): Orange, Seminole, Osceola and Lake counties. Polk is out.
+// Everywhere else is order-taking: the customer supplies measurements and item codes (QBC decision, Sep 15).
+const COUNTY = {
+  'Orlando':'Orange','Winter Park':'Orange','Apopka':'Orange','Winter Garden':'Orange','Ocoee':'Orange','Windermere':'Orange',
+  'Sanford':'Seminole','Lake Mary':'Seminole','Oviedo':'Seminole','Altamonte Springs':'Seminole',
+  'Kissimmee':'Osceola','St. Cloud':'Osceola',
+  'Clermont':'Lake','Leesburg':'Lake','Mount Dora':'Lake','Groveland':'Lake'
+};
+const inArea = c => Boolean(COUNTY[c]);
+const GCS = [
+  { id: 'GC-01', name: 'Example GC A (synthetic)', kind: 'General contractor' },
+  { id: 'GC-02', name: 'Example Builder B (synthetic)', kind: 'Multifamily builder' }
+];
+const REQ = [
+  { id:'QR-1041', at:'2026-11-08T09:12', name:'Dana W.', type:'Homeowner', city:'Winter Park', scope:'Full kitchen', units:1, budget:'$12–18K', timeline:30, source:'Meta ad', contact:true, plans:false, note:'Gut renovation, wants shaker white.' },
+  { id:'QR-1042', at:'2026-11-09T07:40', name:'Marcus T.', type:'Investor (BYO installer)', city:'Kissimmee', scope:'Kitchen + 2 baths', units:4, budget:'$20–30K', timeline:21, source:'Referral partner', contact:true, plans:true, note:'4-unit rental refresh, has his own installer.' },
+  { id:'QR-1043', at:'2026-11-07T15:05', name:'Priya S.', type:'Homeowner', city:'Clermont', scope:'Full kitchen', units:1, budget:'$15–20K', timeline:60, source:'Google Business Profile', contact:true, plans:false, note:'Lake County address.' },
+  { id:'QR-1044', at:'2026-11-08T19:30', name:'Rob K.', type:'Homeowner', city:'Tampa', scope:'Bath vanity', units:1, budget:'Under $3K', timeline:14, source:'Website form', contact:true, plans:false, note:'Outside Central Florida service area.' },
+  { id:'QR-1045', at:'2026-11-09T08:55', name:'Example GC A precon desk', type:'General contractor', city:'Orlando', scope:'Student housing, unit kitchens', units:286, budget:'Bid', timeline:120, source:'Outbound reply', contact:true, plans:true, gc:'GC-01', project:'UCF-area student housing (synthetic)', note:'Asked for unit-type pricing by bid date.' },
+  { id:'QR-1046', at:'2026-11-08T11:20', name:'Lena M.', type:'Homeowner', city:'Lake Mary', scope:'Full kitchen', units:1, budget:'—', timeline:null, source:'Meta ad', contact:false, plans:false, note:'Form missing phone and timeline.' },
+  { id:'QR-1047', at:'2026-11-09T06:10', name:'Carlos D.', type:'Remodeler', city:'Sanford', scope:'Kitchen (client job)', units:1, budget:'$10–14K', timeline:30, source:'Referral partner', contact:true, plans:true, note:'Remodeler pricing for a client kitchen.' },
+  { id:'QR-1048', at:'2026-11-06T13:45', name:'Hannah P.', type:'Homeowner', city:'Oviedo', scope:'Laundry + mudroom', units:1, budget:'$4–6K', timeline:90, source:'Organic social', contact:true, plans:false, note:'Flexible on timing.' },
+  { id:'QR-1049', at:'2026-11-09T09:30', name:'Example Builder B', type:'Multifamily builder', city:'Orlando', scope:'Garden-style apartments', units:96, budget:'Bid', timeline:180, source:'Prequal form', contact:true, plans:false, gc:'GC-02', project:'Horizon West apartments (synthetic)', note:'Prequal approved; plans to follow.' },
+  { id:'QR-1050', at:'2026-11-08T16:00', name:'Tom & Jess R.', type:'Homeowner', city:'Winter Garden', scope:'Full kitchen', units:1, budget:'$20–25K', timeline:45, source:'Google Business Profile', contact:true, plans:false, note:'Saw finishes on GBP.' },
+  { id:'QR-1051', at:'2026-11-08T21:15', name:'Aisha N.', type:'Homeowner', city:'Leesburg', scope:'Bath vanities x2', units:1, budget:'$3–5K', timeline:30, source:'Meta ad', contact:true, plans:false, note:'Lake County address.' },
+  { id:'QR-1053', at:'2026-11-09T10:05', name:'Nina B.', type:'Homeowner', city:'Davenport', scope:'Full kitchen', units:1, budget:'$14–18K', timeline:45, source:'Meta ad', contact:true, plans:false, note:'Polk County, just outside the measure area.' },
+  { id:'QR-1052', at:'2026-11-09T05:50', name:'Greg F.', type:'Investor (BYO installer)', city:'Orlando', scope:'Kitchens, 3 condos', units:3, budget:'$18–24K', timeline:30, source:'Referral partner', contact:true, plans:true, note:'Turnover units, wants same line for all three.' }
+];
+
+// The triage step (the AIP Logic stand-in). Deterministic and explainable.
+function triage(r) {
+  const parts = [];
+  const missing = [];
+  const area = inArea(r.city) ? 'in' : 'out';
+  parts.push(['Service area', area === 'in' ? 30 : 10, 30]);
+  if (!r.contact) missing.push('a phone number');
+  if (r.timeline == null) missing.push('your timeline');
+  if (r.budget === '—') missing.push('a budget range');
+  const complete = 20 - missing.length * 7;
+  parts.push(['Completeness', Math.max(0, complete), 20]);
+  const t = r.timeline == null ? 0 : r.timeline <= 30 ? 15 : r.timeline <= 90 ? 10 : 5;
+  parts.push(['Timeline', t, 15]);
+  const v = r.units >= 10 ? 25 : r.units > 1 ? 18 : /Full kitchen|Kitchen/.test(r.scope) ? 14 : 8;
+  parts.push(['Job size', v, 25]);
+  const s = /Referral|Outbound|Prequal/.test(r.source) ? 10 : 6;
+  parts.push(['Source', s, 10]);
+  const score = parts.reduce((a, p) => a + p[1], 0);
+  // v2 rules (Alex, Nov 11): investors with 2-9 units go to the trade desk and get a call first;
+  // remodelers and GCs with a single job still get the measure; outside the measure area is order-taking.
+  const investor = /Investor/i.test(r.type) && r.units >= 2 && r.units <= 9;
+  let lane;
+  if (r.units >= 10 || investor) lane = 'trade';
+  else if (area === 'out') lane = 'order';
+  else if (missing.length) lane = 'info';
+  else lane = 'book';
+  if (lane === 'trade' && r.units >= 10 && !r.plans) missing.push('unit plans');
+  return { score, lane, parts, missing };
+}
+
+function hi(r) {
+  if (/contractor|builder/i.test(r.type)) return 'Hi there';
+  return 'Hi ' + r.name.replace(/ [A-Z]\.$/, '');
+}
+function joinList(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+function askList(t) { return t.missing.filter(m => !/unit plans/.test(m)); }
+const LANE = {
+  book:  { label: 'Book measure', action: 'Book a free in-home measure', how: r => `Call ${r.name} back and offer three measure slots this week.`,
+           draft: r => `${hi(r)}, thanks for reaching out to Quality Built Cabinets about your ${r.scope.toLowerCase()}. We do a free in-home measure. Would any of these work this week: [slot 1], [slot 2] or [slot 3]?` },
+  info:  { label: 'Needs info', action: 'Request missing info', how: (r, t) => `Ask for: ${t.missing.join(', ')}. Hold the quote until it's back.`,
+           draft: (r, t) => `${hi(r)}, thanks for your request. To put your quote together, could you send ${joinList(askList(t))}? We'll get back to you within 24 hours.` },
+  trade: { label: 'Trade desk', action: 'Route to trade desk',
+           how: (r, t) => r.units < 10
+             ? `Investor with ${r.units} units: the QBC team calls today, before any measure, to talk volume and pricing. No answer: text and email the same day.`
+             : `Add to the bid list for ${r.project || 'this project'}. ${r.plans ? 'Price by unit type from the plans.' : 'Request unit plans and the bid date.'}`,
+           draft: r => r.units < 10
+             ? `${hi(r)}, thanks for reaching out to Quality Built Cabinets about your ${r.units} units. The QBC team will call you within 24 hours to talk through the units, then set up a free measure.`
+             : r.plans
+             ? `${hi(r)}, thanks for including Quality Built Cabinets. We'll price each unit type from the plans and send it ahead of your bid date.`
+             : `${hi(r)}, thanks for including Quality Built Cabinets. Could you send the unit plans and your bid date? We'll price each unit type and reply within 24 hours.` },
+  order: { label: 'Order-taking', action: 'Offer order-taking (their measurements)', how: r => `${r.city} is outside the measure area (Orange, Seminole, Osceola, Lake). Offer order-taking: they send measurements and item codes, we quote, the cabinets ship to them. The fit is theirs.`,
+           draft: r => `${hi(r)}, thanks for reaching out to Quality Built Cabinets. ${r.city} is outside the area where we measure in person, but we can still supply your cabinets: send us your measurements and the item codes you want, and we'll quote it and ship it to you. Since you'd be measuring, the sizes are yours to confirm.` }
+};
+
+// The one-sentence reason (in Foundry, AIP Logic writes this; here it is built from the same rule parts).
+function why(r, t) {
+  const bits = [];
+  bits.push(inArea(r.city) ? `${r.city} (${COUNTY[r.city]} County) is in the measure area` : `${r.city} is outside the measure area, so it's order-taking`);
+  bits.push(t.missing.length ? `missing ${t.missing.join(', ')}` : 'the request is complete');
+  if (r.timeline != null) bits.push(`wants it within ${r.timeline} days`);
+  bits.push(r.units >= 10 ? `${r.units} units makes it a trade job` : /Investor/i.test(r.type) && r.units > 1 ? `an investor with ${r.units} units gets a call first` : r.units > 1 ? `${r.units} units` : 'a single job');
+  bits.push(`came in through ${r.source}`);
+  return `Scored ${t.score}/100: ${bits.join('; ')}.`;
+}
+
+const state = { filter: 'all', selected: null, status: {}, log: [] };
+const rows = REQ.map(r => ({ r, t: triage(r) })).sort((a, b) => b.t.score - a.t.score);
+state.selected = rows[0].r.id;
+
+function hoursSince(at) { return Math.round((NOW - new Date(at + ':00-05:00')) / 36e5); }
+function slaText(r) {
+  const h = hoursSince(r.at);
+  const left = 24 - h;
+  return left >= 0 ? { text: `callback due in ${left}h`, late: false } : { text: `callback ${-left}h overdue`, late: true };
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+function renderLanes() {
+  const counts = { all: rows.length, book: 0, info: 0, trade: 0, order: 0 };
+  rows.forEach(x => counts[x.t.lane]++);
+  const items = [['all', 'All'], ['book', LANE.book.label], ['info', LANE.info.label], ['trade', LANE.trade.label], ['order', LANE.order.label]];
+  document.getElementById('lanes').innerHTML = items.map(([k, l]) =>
+    `<button class="lane-btn" id="lane-${k}" data-lane="${k}" aria-pressed="${state.filter === k}">${l}<span class="n">${counts[k]}</span></button>`).join('');
+  document.querySelectorAll('.lane-btn').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.lane; renderAll(); }));
+}
+
+function renderQueue() {
+  const list = rows.filter(x => state.filter === 'all' || x.t.lane === state.filter);
+  document.getElementById('qmeta').textContent = `${list.length} shown · sorted by score`;
+  document.getElementById('queue').innerHTML = list.map(({ r, t }) => {
+    const st = state.status[r.id];
+    const sla = slaText(r);
+    const chip = st ? `<span class="chip done">${st === 'approved' ? 'Approved' : 'Sent back'}</span>` : `<span class="chip ${t.lane}">${LANE[t.lane].label}</span>`;
+    return `<li class="row" role="option" tabindex="0" data-id="${r.id}" aria-selected="${state.selected === r.id}">
+      <span class="score">${t.score}</span>
+      <span class="who"><b>${esc(r.name)}</b><span>${esc(r.type)} · ${esc(r.city)} · ${esc(r.scope)}</span></span>
+      <span>${chip}<span class="sla ${sla.late && !st ? 'late' : ''}">${st ? r.id : sla.text}</span></span>
+    </li>`;
+  }).join('') || '<li class="empty">No requests in this lane.</li>';
+  document.querySelectorAll('.row').forEach(el => {
+    const pick = () => { state.selected = el.dataset.id; renderAll(); };
+    el.addEventListener('click', pick);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+}
+
+function renderDetail() {
+  const x = rows.find(y => y.r.id === state.selected);
+  const el = document.getElementById('detail');
+  if (!x) { el.innerHTML = '<p class="empty">Pick a request from the queue.</p>'; return; }
+  const { r, t } = x;
+  const sla = slaText(r);
+  const st = state.status[r.id];
+  const gc = r.gc ? GCS.find(g => g.id === r.gc) : null;
+  document.getElementById('dmeta').textContent = r.id;
+  const prop = (k, v, miss) => `<div><dt>${k}</dt><dd class="${miss ? 'miss' : ''}">${esc(v)}</dd></div>`;
+  el.innerHTML = `
+    <div class="d-top">
+      <div><h3>${esc(r.name)}</h3><span class="id">${r.id} · received ${r.at.replace('T', ' ')} · ${sla.text}</span></div>
+      <span class="chip ${t.lane}">${LANE[t.lane].label} · score ${t.score}/100</span>
+    </div>
+    <dl class="props">
+      ${prop('Customer type', r.type)}${prop('City', r.city)}${prop('Scope', r.scope)}
+      ${prop('Units', r.units)}${prop('Budget', r.budget, r.budget === '—')}${prop('Timeline', r.timeline == null ? 'missing' : `${r.timeline} days`, r.timeline == null)}
+      ${prop('Source', r.source)}${prop('Contact info', r.contact ? 'on file' : 'missing', !r.contact)}${prop('Plans', r.plans ? 'received' : 'not yet')}
+    </dl>
+    <div>
+      <p class="section-label">Score breakdown</p>
+      <div class="bars">${t.parts.map(([k, v, max]) => `<div class="bar"><span>${k}</span><span class="track"><span class="fill" style="width:${(v / max) * 100}%"></span></span><span class="v">${v}/${max}</span></div>`).join('')}</div>
+    </div>
+    <div>
+      <p class="section-label">Linked objects</p>
+      <div class="links">
+        <span class="obj"><i>Customer</i>${esc(r.name)}</span>
+        ${r.project ? `<span class="obj"><i>Project</i>${esc(r.project)}</span>` : ''}
+        ${gc ? `<span class="obj"><i>${esc(gc.kind)}</i>${esc(gc.name)}</span>` : ''}
+        <span class="obj"><i>Channel</i>${esc(r.source)}</span>
+      </div>
+    </div>
+    <div class="proposal">
+      <p class="section-label" style="margin:0">Proposed action · needs approval</p>
+      <p><b>${LANE[t.lane].action}.</b> ${esc(LANE[t.lane].how(r, t))}</p>
+      <p class="why">${esc(why(r, t))} Note on file: ${esc(r.note)}</p>
+      <div>
+        <p class="section-label" style="margin:0 0 6px">Draft reply (sent only after approval)</p>
+        <div class="draft" id="draft">${esc(LANE[t.lane].draft(r, t))}</div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="approve" ${st ? 'disabled' : ''}>Approve action</button>
+        <button id="reject" ${st ? 'disabled' : ''}>Send back</button>
+      </div>
+    </div>`;
+  if (!st) {
+    document.getElementById('approve').addEventListener('click', () => decide(r, t, 'approved'));
+    document.getElementById('reject').addEventListener('click', () => decide(r, t, 'sent back'));
+  }
+}
+
+function decide(r, t, verdict) {
+  state.status[r.id] = verdict === 'approved' ? 'approved' : 'rejected';
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const text = `${r.id} · ${verdict === 'approved' ? LANE[t.lane].action : 'Sent back for review'} · ${r.name}`;
+  state.log.unshift({ time, text });
+  renderAll();
+}
+
+function renderOnto() {
+  const n = k => rows.filter(x => x.t.lane === k).length;
+  const projects = REQ.filter(r => r.project).length;
+  document.getElementById('onto').innerHTML = `
+    <div class="tbl"><table>
+      <thead><tr><th>Object type</th><th>Key properties</th><th style="text-align:right">Count</th></tr></thead>
+      <tbody>
+        <tr><td>QuoteRequest</td><td>scope, units, budget, timeline, source, triage score, lane</td><td class="n">${REQ.length}</td></tr>
+        <tr><td>Customer</td><td>type (homeowner, investor, remodeler, GC), city, contact</td><td class="n">${REQ.length}</td></tr>
+        <tr><td>Project</td><td>name, unit count, bid date</td><td class="n">${projects}</td></tr>
+        <tr><td>TradePartner</td><td>kind, prequal status</td><td class="n">${GCS.length}</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Link type</th><th>Action type (human approves)</th></tr></thead>
+      <tbody>
+        <tr><td>QuoteRequest → Customer</td><td>Book measure (${n('book')} proposed)</td></tr>
+        <tr><td>QuoteRequest → Project</td><td>Request info (${n('info')} proposed)</td></tr>
+        <tr><td>Project → TradePartner</td><td>Route to trade desk (${n('trade')} proposed)</td></tr>
+        <tr><td>QuoteRequest → Channel</td><td>Offer order-taking (${n('order')} proposed)</td></tr>
+      </tbody>
+    </table></div>`;
+}
+
+function renderLog() {
+  const el = document.getElementById('log');
+  const approved = Object.values(state.status).filter(s => s === 'approved').length;
+  document.getElementById('lmeta').textContent = `${approved} approved · ${state.log.length} logged`;
+  const toMeasure = rows.filter(x => x.t.lane === 'book').length;
+  const measuresOk = rows.filter(x => x.t.lane === 'book' && state.status[x.r.id] === 'approved').length;
+  const tradeOk = rows.filter(x => x.t.lane === 'trade' && state.status[x.r.id] === 'approved').length;
+  document.getElementById('funnel').innerHTML =
+    `<span class="step">${rows.length} requests</span><span class="arrow">→</span>` +
+    `<span class="step">${toMeasure} ready to measure</span><span class="arrow">→</span>` +
+    `<span class="step">${measuresOk} measures booked</span><span class="arrow">·</span>` +
+    `<span class="step">${tradeOk} trade bids</span>`;
+  el.innerHTML = state.log.length ? state.log.map(e => `<li><time>${esc(e.time)}</time><span>${esc(e.text)}</span></li>`).join('')
+    : '<li class="empty" style="display:block">No actions yet. Approve or send back a proposal to log it here.</li>';
+}
+
+function renderAll() { renderLanes(); renderQueue(); renderDetail(); renderOnto(); renderLog(); }
+renderAll();
+</script>
+</body>
+</html>
