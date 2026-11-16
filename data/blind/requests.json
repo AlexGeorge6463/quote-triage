@@ -1,0 +1,1663 @@
+{
+ "synthetic": true,
+ "split": "blind",
+ "note": "SYNTHETIC. Hand-written Nov 16, 2026 to docs/BLIND-SPEC.md, committed before the tool was run on it. Names invented; phones 555-01xx; emails at example domains; no street addresses. Towns and ZIPs are real places used only to test the service-area rule.",
+ "clock": "2026-11-14T08:00:00-05:00",
+ "requests": [
+  {
+   "id": "B-01",
+   "received": "2026-11-10T06:52",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Valeria R.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0171",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:48): Hi, this is Valeria, I'm calling about cabinets. We had a leak under the kitchen sink over the weekend and the base cabinet is basically falling apart. The insurance adjuster said to get a quote this week. We're in Winter Park. Budget is probably around ten to fifteen thousand. You can call me back at this number, 407 555 0171. Thanks."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "Winter Park (Orange); phone, timeline (this week) and budget are all in the transcript; active leak and an insurance quote."
+   }
+  },
+  {
+   "id": "B-02",
+   "received": "2026-11-10T08:15",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Rafael M.",
+    "role": "Homeowner",
+    "location": "Conway",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0172",
+    "email": "rafael.m@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Full kitchen redo, keeping the layout."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Conway is an Orlando neighborhood (Orange); complete."
+   }
+  },
+  {
+   "id": "B-03",
+   "received": "2026-11-10T09:40",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Imani K.",
+    "role": "",
+    "location": "kissimmee fl",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "Within 30 days",
+    "phone": "4075550173",
+    "email": "imani.k@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "hi we want new cabnits for the kitchen the old ones are peeling bad. can someone come measure this wk?"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Kissimmee (Osceola); complete despite the spelling."
+   }
+  },
+  {
+   "id": "B-04",
+   "received": "2026-11-10T10:05",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Local Badge Co",
+    "role": "Other",
+    "location": "",
+    "project": "Other",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "hello@localbadge.example",
+    "source": "Website form",
+    "plans": "",
+    "message": "Hi! Is your business Google Guaranteed? Contractors with the green badge get 3x more calls. We handle the background checks and insurance paperwork for you. Reply to get started this week."
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Vendor pitch for a Google badge service."
+   }
+  },
+  {
+   "id": "B-05",
+   "received": "2026-11-10T11:30",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Delphine A.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Delphine A. <delphine.a@example.com>\nDate: Tue, Nov 10, 2026 at 11:02 AM\nSubject: Cabinet quote\nTo: QBC Team <team@qbc.example>\n\nHello, we are remodeling our kitchen in Oviedo and would like a quote on shaker cabinets in white. We are hoping to start in January and our budget is about $25,000. Please call me at 321-555-0174.\n\nThank you,\nDelphine"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Oviedo (Seminole); phone, timeline and budget are all in the email."
+   }
+  },
+  {
+   "id": "B-06",
+   "received": "2026-11-10T12:10",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Corey B.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "corey.b@example.com",
+    "source": "Website form",
+    "plans": "",
+    "message": "how much for kitchen cabinets?"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "location",
+     "phone",
+     "timeline",
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "A real kitchen lead with only an email: place, phone, timeline and budget all missing."
+   }
+  },
+  {
+   "id": "B-07",
+   "received": "2026-11-10T13:45",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Lorena G.",
+    "role": "Homeowner",
+    "location": "Kissimmee",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0175",
+    "email": "lorena.g@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Hola, quiero cambiar los gabinetes de la cocina. Me gusta el color blanco. ¿Pueden venir a medir un sábado?"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Kissimmee (Osceola); complete. Written in Spanish."
+   }
+  },
+  {
+   "id": "B-08",
+   "received": "2026-11-10T14:20",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Example Townhomes LLC",
+    "role": "Builder / developer",
+    "location": "Kissimmee",
+    "project": "Kitchen",
+    "units": "24",
+    "budget": "Bid",
+    "timeline": "3–6 months",
+    "phone": "407-555-0170",
+    "email": "estimating@townhomes.example",
+    "source": "Website form",
+    "plans": "Yes",
+    "message": "24-unit townhome community, phase 1. Drawings attached. Need cabinet pricing by unit type."
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "24 units with drawings: trade desk, nothing to ask."
+   }
+  },
+  {
+   "id": "B-09",
+   "received": "2026-11-10T15:05",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Brady W.",
+    "role": "",
+    "location": "ormond bch",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "386-555-0101",
+    "email": "brady.w@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "lookin for cabinets for my kitchen, saw the ad. do u guys come out this far?"
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Ormond Beach is in Volusia County: order-taking."
+   }
+  },
+  {
+   "id": "B-10",
+   "received": "2026-11-10T16:40",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Keisha N.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "689-555-0176",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:31): Hey, my name is Keisha, I'm out in Sanford. I wanted to get some information about getting new cabinets for my kitchen. Give me a call back when you get a chance. Thanks."
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "timeline",
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Sanford (Seminole) and a callback number; no timeline or budget."
+   }
+  },
+  {
+   "id": "B-11",
+   "received": "2026-11-10T17:55",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Arturo P.",
+    "role": "Homeowner",
+    "location": "Auburndale",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "1–3 months",
+    "phone": "863-555-0177",
+    "email": "arturo.p@example.com",
+    "source": "Google Business Profile",
+    "plans": "No",
+    "message": "New construction home, need kitchen and pantry cabinets."
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Auburndale is in Polk County: order-taking."
+   }
+  },
+  {
+   "id": "B-12",
+   "received": "2026-11-10T19:20",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Capital Rápido",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "info@capitalrapido.example",
+    "source": "Website form",
+    "plans": "",
+    "message": "Préstamos para su negocio de hasta $150,000. Aprobación en 24 horas, sin verificación de crédito. Responda SÍ para más información."
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Business-loan pitch in Spanish."
+   }
+  },
+  {
+   "id": "B-13",
+   "received": "2026-11-10T20:45",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "marisol p",
+    "role": "Homeowner",
+    "location": "32808",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "Under $5K",
+    "timeline": "Within 30 days",
+    "phone": "(407)555-0178",
+    "email": "marisol.p@example.com",
+    "source": "Website form",
+    "plans": "",
+    "message": "just need the bottom cabinets replaced, uppers r fine"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "ZIP 32808 is Pine Hills, Orlando (Orange); complete."
+   }
+  },
+  {
+   "id": "B-14",
+   "received": "2026-11-10T21:30",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Trent H.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0179",
+    "email": "",
+    "source": "Website form",
+    "plans": "",
+    "message": "kitchen. winter park. ~15k. next month."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "One line, but it has the place, budget and timeline; the phone is in the form."
+   }
+  },
+  {
+   "id": "B-15",
+   "received": "2026-11-11T00:12",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "800-555-0180",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:22): This is an important message regarding your Google business listing. Your listing is at risk of being suspended. Press one now to speak with a Google specialist. To be removed from our list, press nine."
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Robocall about a Google listing."
+   }
+  },
+  {
+   "id": "B-16",
+   "received": "2026-11-11T07:35",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Nia J.",
+    "role": "Homeowner",
+    "location": "Lake Mary",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "ASAP",
+    "phone": "321-555-0102",
+    "email": "nia.j@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Our kitchen cabinets are original from 1998. Ready for something new."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Lake Mary (Seminole); complete. ASAP alone is not urgent."
+   }
+  },
+  {
+   "id": "B-17",
+   "received": "2026-11-11T08:50",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Example Builders precon desk",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Precon Desk <precon@example-builders.example>\nDate: Wed, Nov 11, 2026 at 8:41 AM\nSubject: Invitation to bid – cabinets – 96-unit senior living, Lakeland FL\nTo: QBC Team <team@qbc.example>\n\nWe invite you to bid casework for a 96-unit independent senior living building in Lakeland, FL. Drawings and the unit matrix are attached. Bids are due Dec 18.\n\nRegards,\nPrecon Desk | 863-555-0181"
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "96 units: trade desk even though Lakeland is outside the area; drawings attached, so nothing to ask."
+   }
+  },
+  {
+   "id": "B-18",
+   "received": "2026-11-11T09:30",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Bruno C.",
+    "role": "",
+    "location": "near orlando",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0103",
+    "email": "bruno.c@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "kitchen + island, want gray"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "location"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "\"near orlando\" cannot be placed; everything else is here."
+   }
+  },
+  {
+   "id": "B-19",
+   "received": "2026-11-11T10:15",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Priscilla V.",
+    "role": "Homeowner",
+    "location": "Winter Garden",
+    "project": "Bathroom",
+    "units": "1",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0104",
+    "email": "priscilla.v@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Two vanities for the primary bath."
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "timeline",
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Winter Garden (Orange); timeline and budget left blank."
+   }
+  },
+  {
+   "id": "B-20",
+   "received": "2026-11-11T11:00",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Ignacio R.",
+    "role": "",
+    "location": "Lakeland",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "863-555-0183",
+    "email": "ignacio.r@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Vivo en Lakeland. ¿Hacen entregas hasta aquí? Necesito gabinetes para la cocina."
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Lakeland is in Polk County: order-taking."
+   }
+  },
+  {
+   "id": "B-21",
+   "received": "2026-11-11T11:45",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Accounts Payable",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Accounts Payable <billing@invoice-notice.example>\nDate: Wed, Nov 11, 2026 at 11:40 AM\nSubject: OVERDUE: Invoice #4471 – final notice\nTo: QBC Team <team@qbc.example>\n\nYour invoice #4471 for $1,284.00 is 30 days past due. To avoid service interruption, review and pay here: https://invoice-notice.example/pay/4471"
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Fake overdue-invoice phishing."
+   }
+  },
+  {
+   "id": "B-22",
+   "received": "2026-11-11T12:30",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Example Development Co",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "pm@devco.example",
+    "source": "Website form",
+    "plans": "",
+    "message": "30 unit townhome project orlando, need cabinet pricing"
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [
+     "plans"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "30 units: trade desk; no plans yet."
+   }
+  },
+  {
+   "id": "B-23",
+   "received": "2026-11-11T13:10",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Gideon F.",
+    "role": "",
+    "location": "Apopka",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0105",
+    "email": "gideon.f@example.com",
+    "source": "Google Business Profile",
+    "plans": "",
+    "message": "hinge broke on one of my cabinet doors and it wont close right, can u send someone to fix it"
+   },
+   "label": {
+    "lane": "decline",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "A repair: nothing for QBC to sell."
+   }
+  },
+  {
+   "id": "B-24",
+   "received": "2026-11-11T14:00",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Renata O.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0185",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:39): Hi, good afternoon, this is Renata, I live in Chuluota. We're redoing our kitchen early next year and we've got about twenty thousand set aside for cabinets. Would love to have someone come out and measure. My number is 407 555 0185. Thank you."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Chuluota is in Seminole County; phone, timeline and budget are in the transcript."
+   }
+  },
+  {
+   "id": "B-25",
+   "received": "2026-11-11T15:20",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Silas D.",
+    "role": "Homeowner",
+    "location": "Clermont",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$30K+",
+    "timeline": "3–6 months",
+    "phone": "352-555-0106",
+    "email": "silas.d@example.com",
+    "source": "Google Business Profile",
+    "plans": "Yes",
+    "message": "Building an addition, kitchen will move to the new space. Have drawings."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Clermont (Lake); complete."
+   }
+  },
+  {
+   "id": "B-26",
+   "received": "2026-11-11T16:05",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Joanna L.",
+    "role": "Homeowner",
+    "location": "kissimee",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$20–30K",
+    "timeline": "Within 30 days",
+    "phone": "407-555-0107",
+    "email": "joanna.l@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "i own 3 airbnbs off 192, all 3 kitchens need redoing before peak season"
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Owns 3 short-term rentals: an investor with 3 units goes to the trade desk."
+   }
+  },
+  {
+   "id": "B-27",
+   "received": "2026-11-11T17:10",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Darnell T.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "Begin forwarded message:\nFrom: Darnell T. <darnell.t@example.com>\nDate: November 11, 2026 at 4:48 PM EST\nSubject: Kitchen\nTo: QBC Team <team@qbc.example>\n\nHi there, I got your info from my neighbor. Looking for new kitchen cabinets for our home in Longwood, budget around $12k, want it done by spring. Best number is 321-555-0186.\n\nDarnell T.\nSent from my iPhone"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Longwood (Seminole); phone, timeline and budget in the email."
+   }
+  },
+  {
+   "id": "B-28",
+   "received": "2026-11-11T18:30",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Leticia M.",
+    "role": "Homeowner",
+    "location": "Kissimmee",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "Under $5K",
+    "timeline": "Within 30 days",
+    "phone": "407-555-0108",
+    "email": "leticia.m@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Ya compré los gabinetes en Home Depot, solo necesito alguien que los instale."
+   },
+   "label": {
+    "lane": "decline",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Already bought cabinets, wants installation only (in Spanish)."
+   }
+  },
+  {
+   "id": "B-29",
+   "received": "2026-11-11T19:45",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Ingrid S.",
+    "role": "Homeowner",
+    "location": "Savannah, GA",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "1–3 months",
+    "phone": "912-555-0187",
+    "email": "ingrid.s@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Saw your cabinets on Instagram. Do you ship to Georgia?"
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Out of state: order-taking."
+   }
+  },
+  {
+   "id": "B-30",
+   "received": "2026-11-11T21:05",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Hugo E.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0188",
+    "email": "",
+    "source": "Website form",
+    "plans": "",
+    "message": "cabinets"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "location",
+     "timeline",
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "A phone number and nothing else."
+   }
+  },
+  {
+   "id": "B-31",
+   "received": "2026-11-12T07:10",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "imani k",
+    "role": "",
+    "location": "Kissimmee",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407.555.0173",
+    "email": "",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "sent this tuesday, still need someone to come measure the kitchen"
+   },
+   "label": {
+    "lane": "duplicate",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": "B-03",
+    "why": "Same phone as the Tuesday request, same kitchen."
+   }
+  },
+  {
+   "id": "B-32",
+   "received": "2026-11-12T08:25",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Example Property Mgmt",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0189",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:44): Hi, this is Porter with Example Property Management. We manage a complex in Lake Nona and we've got about a dozen units turning over in the next few months that need new kitchen cabinets. Can somebody give me a call back about pricing? 407 555 0189."
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [
+     "plans"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "About 12 units: trade desk; no plans mentioned."
+   }
+  },
+  {
+   "id": "B-33",
+   "received": "2026-11-12T09:00",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Camille R.",
+    "role": "",
+    "location": "Belle Isle",
+    "project": "",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0109",
+    "email": "camille.r@example.com",
+    "source": "Google Business Profile",
+    "plans": "",
+    "message": ""
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Belle Isle (Orange); the required details are all there, no message."
+   }
+  },
+  {
+   "id": "B-34",
+   "received": "2026-11-12T09:40",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Ramona T.",
+    "role": "Homeowner",
+    "location": "Sanford",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0110",
+    "email": "ramona.t@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Buenas, me interesa remodelar la cocina. ¿Cuánto cuesta más o menos?"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "timeline",
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Sanford (Seminole); timeline and budget missing."
+   }
+  },
+  {
+   "id": "B-35",
+   "received": "2026-11-12T10:20",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Wendell G.",
+    "role": "",
+    "location": "33511",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$5–10K",
+    "timeline": "Within 30 days",
+    "phone": "813-555-0191",
+    "email": "wendell.g@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "need kitchen cabs asap, wife wants white shaker"
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "ZIP 33511 is Brandon (Hillsborough): order-taking."
+   }
+  },
+  {
+   "id": "B-36",
+   "received": "2026-11-12T11:05",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Aurora V.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Aurora V. <aurora.v@example.com>\nDate: Thu, Nov 12, 2026 at 10:58 AM\nSubject: Re: cabinets\nTo: QBC Team <team@qbc.example>\n\nThanks for getting back to me! We're in Winter Springs. Timeline is flexible, maybe spring. You can reach me at 689-555-0192.\n\n> On Mon, Nov 9, 2026, QBC Team wrote:\n> Thanks for reaching out! Where is the project, and what's your timeline?"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "budget"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Winter Springs (Seminole), phone and timeline given; only the budget is missing."
+   }
+  },
+  {
+   "id": "B-37",
+   "received": "2026-11-12T12:00",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Win",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "promo@short.example",
+    "source": "Website form",
+    "plans": "",
+    "message": "https://short.example/x9Kq"
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "A bare link."
+   }
+  },
+  {
+   "id": "B-38",
+   "received": "2026-11-12T12:45",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Xavier N.",
+    "role": "Homeowner",
+    "location": "Ocoee",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "Under $5K",
+    "timeline": "Within 30 days",
+    "phone": "407-555-0111",
+    "email": "xavier.n@example.com",
+    "source": "Google Business Profile",
+    "plans": "No",
+    "message": "Our cabinets are in good shape, we just want them painted a darker color. Do you offer refinishing?"
+   },
+   "label": {
+    "lane": "decline",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Painting existing cabinets: nothing for QBC to sell."
+   }
+  },
+  {
+   "id": "B-39",
+   "received": "2026-11-12T13:30",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Renata O.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0185",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:17): Hi, it's Renata again from Chuluota, I left a message yesterday about the kitchen cabinets, just making sure you got it. 407 555 0185, thanks."
+   },
+   "label": {
+    "lane": "duplicate",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": "B-24",
+    "why": "Same caller, same kitchen, the next day."
+   }
+  },
+  {
+   "id": "B-40",
+   "received": "2026-11-12T14:15",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Esme W.",
+    "role": "",
+    "location": "mascotte",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "352-555-0193",
+    "email": "esme.w@example.com",
+    "source": "Website form",
+    "plans": "",
+    "message": "new build house, kitchen n laundry cabinets. can u measure after the drywall goes up"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Mascotte is in Lake County; complete."
+   }
+  },
+  {
+   "id": "B-41",
+   "received": "2026-11-12T15:00",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Desmond K.",
+    "role": "Homeowner",
+    "location": "Orlando",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "1–3 months",
+    "phone": "",
+    "email": "desmond.k@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Prefer email please."
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "phone"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Orlando (Orange); no phone number."
+   }
+  },
+  {
+   "id": "B-42",
+   "received": "2026-11-12T15:40",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Gloria H.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Gloria H. <gloria.h@example.com>\nDate: Thu, Nov 12, 2026 at 3:31 PM\nSubject: Cabinets for rentals\nTo: QBC Team <team@qbc.example>\n\nI own a duplex and a triplex in Sanford, so five units in all. Tenants move in December 15 on the duplex side and the kitchens there are in rough shape. Budget is around $40k for all five. Call me at 407-555-0194.\n\nGloria"
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "A landlord with 5 units: trade desk; a dated move-in makes it urgent."
+   }
+  },
+  {
+   "id": "B-43",
+   "received": "2026-11-12T16:30",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Lourdes F.",
+    "role": "Homeowner",
+    "location": "Orlando",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$10–20K",
+    "timeline": "ASAP",
+    "phone": "407-555-0112",
+    "email": "lourdes.f@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Se nos inundó la cocina con la tormenta y los gabinetes de abajo están dañados. El seguro nos pide un presupuesto."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "Orlando (Orange); complete; flood damage and an insurance quote make it urgent."
+   }
+  },
+  {
+   "id": "B-44",
+   "received": "2026-11-12T17:20",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "cash home buyers",
+    "role": "",
+    "location": "orlando",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "888-555-0195",
+    "email": "offers@cashbuyers.example",
+    "source": "Website form",
+    "plans": "",
+    "message": "WE BUY HOUSES CASH any condition, close in 7 days!! no repairs no fees call now"
+   },
+   "label": {
+    "lane": "spam",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "A \"we buy houses\" pitch."
+   }
+  },
+  {
+   "id": "B-45",
+   "received": "2026-11-12T18:05",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Tobias A.",
+    "role": "Homeowner",
+    "location": "Windermere",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$30K+",
+    "timeline": "3–6 months",
+    "phone": "407-555-0113",
+    "email": "tobias.a@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Large kitchen with a 10-foot island. Would like to see door samples."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Windermere (Orange); complete."
+   }
+  },
+  {
+   "id": "B-46",
+   "received": "2026-11-12T19:30",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Simone B.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "321-555-0196",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:36): Hi, my name is Simone, I'm in Palm Bay, over on the coast. I saw your ad and was wondering if you could do cabinets for my kitchen. We want to get it done in the next couple of months and we're thinking around fifteen thousand. Call me back, 321 555 0196."
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Palm Bay is in Brevard County: order-taking."
+   }
+  },
+  {
+   "id": "B-47",
+   "received": "2026-11-12T20:50",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Otis P.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "otis.p@example.com",
+    "source": "Website form",
+    "plans": "",
+    "message": "quote for quartz countertops please"
+   },
+   "label": {
+    "lane": "decline",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Countertops only: nothing for QBC to sell."
+   }
+  },
+  {
+   "id": "B-48",
+   "received": "2026-11-13T06:30",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:29): Hi, um, we've got water coming from under the kitchen sink and the cabinet floor is soaked through. We're in Kissimmee. We need new base cabinets as soon as possible. You can email me at nolan.d@example.com. Thanks."
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "phone",
+     "budget"
+    ],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "Kissimmee, timeline given (as soon as possible), email but no phone and no budget; active water damage."
+   }
+  },
+  {
+   "id": "B-49",
+   "received": "2026-11-13T07:45",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Example Townhomes LLC",
+    "role": "Builder / developer",
+    "location": "Sanford",
+    "project": "Kitchen",
+    "units": "40",
+    "budget": "Bid",
+    "timeline": "3–6 months",
+    "phone": "407-555-0170",
+    "email": "estimating@townhomes.example",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Second community, 40 units in Sanford. Plans to follow."
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [
+     "plans"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Same builder, a different 40-unit job: a new trade request, not a duplicate; ask for plans."
+   }
+  },
+  {
+   "id": "B-50",
+   "received": "2026-11-13T08:30",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Harriet C.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Harriet C. <harriet.c@example.com>\nDate: Fri, Nov 13, 2026 at 8:22 AM\nSubject: kitchen cabinets – Vero Beach\nTo: QBC Team <team@qbc.example>\n\nWe're closing on a house in Vero Beach on December 4 and want new kitchen cabinets in before we move in. Budget $18–22k. Phone 772-555-0197.\n\nHarriet"
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "Vero Beach is in Indian River County: order-taking; a dated closing makes it urgent."
+   }
+  },
+  {
+   "id": "B-51",
+   "received": "2026-11-13T09:15",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Ezra M.",
+    "role": "",
+    "location": "Clermont",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "1–3 months",
+    "phone": "407 555 01",
+    "email": "ezra.m@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "pls call after 5"
+   },
+   "label": {
+    "lane": "info",
+    "ask": [
+     "phone"
+    ],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Clermont (Lake); the phone number is cut off."
+   }
+  },
+  {
+   "id": "B-52",
+   "received": "2026-11-13T10:00",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Marco V.",
+    "role": "",
+    "location": "Kissimmee",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$30K+",
+    "timeline": "1–3 months",
+    "phone": "407-555-0114",
+    "email": "marco.v@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "Tengo cuatro apartamentos de alquiler en Kissimmee y quiero cambiar los gabinetes de cocina en todos."
+   },
+   "label": {
+    "lane": "trade",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Owns four rental apartments: an investor with 4 units goes to the trade desk."
+   }
+  },
+  {
+   "id": "B-53",
+   "received": "2026-11-13T10:45",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Corey B.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "Corey.B@example.com",
+    "source": "Website form",
+    "plans": "",
+    "message": "did you get my message??"
+   },
+   "label": {
+    "lane": "duplicate",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": "B-06",
+    "why": "Same email as the Tuesday kitchen question."
+   }
+  },
+  {
+   "id": "B-54",
+   "received": "2026-11-13T11:30",
+   "split": "blind",
+   "category": "clean",
+   "form": {
+    "name": "Tobias A.",
+    "role": "Homeowner",
+    "location": "Windermere",
+    "project": "Bathroom",
+    "units": "1",
+    "budget": "$5–10K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0113",
+    "email": "tobias.a@example.com",
+    "source": "Website form",
+    "plans": "No",
+    "message": "Separate from the kitchen request: also want a quote on two bathroom vanities."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Same household as the kitchen request, but a different job (bathroom): a new request."
+   }
+  },
+  {
+   "id": "B-55",
+   "received": "2026-11-13T12:20",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Lorena G.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Lorena G. <lorena.g@example.com>\nDate: Fri, Nov 13, 2026 at 12:14 PM\nSubject: Gabinetes de cocina\nTo: QBC Team <team@qbc.example>\n\nHola, llené el formulario de Facebook el martes. Todavía me interesa que vengan a medir la cocina en Kissimmee. Gracias."
+   },
+   "label": {
+    "lane": "duplicate",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": "B-07",
+    "why": "Same person and kitchen as her Tuesday Meta lead (same email in the forwarded header)."
+   }
+  },
+  {
+   "id": "B-56",
+   "received": "2026-11-13T13:10",
+   "split": "blind",
+   "category": "spanish",
+   "form": {
+    "name": "Yolanda B.",
+    "role": "Homeowner",
+    "location": "Harmony",
+    "project": "Kitchen",
+    "units": "1",
+    "budget": "$20–30K",
+    "timeline": "1–3 months",
+    "phone": "407-555-0115",
+    "email": "yolanda.b@example.com",
+    "source": "Google Business Profile",
+    "plans": "",
+    "message": "Casa en Harmony, queremos cambiar los cabinets de la cocina, los de builder grade ya están feos."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Harmony is in Osceola County; complete. Spanish and English mixed."
+   }
+  },
+  {
+   "id": "B-57",
+   "received": "2026-11-13T14:00",
+   "split": "blind",
+   "category": "minimal",
+   "form": {
+    "name": "Lola K.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "386-555-0198",
+    "email": "",
+    "source": "Website form",
+    "plans": "",
+    "message": "cabinets for my condo in new smyrna beach"
+   },
+   "label": {
+    "lane": "order",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "New Smyrna Beach is in Volusia County: order-taking (checked before missing details)."
+   }
+  },
+  {
+   "id": "B-58",
+   "received": "2026-11-13T15:30",
+   "split": "blind",
+   "category": "forwarded",
+   "form": {
+    "name": "Kai R.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "",
+    "email": "",
+    "source": "Email",
+    "plans": "",
+    "message": "---------- Forwarded message ---------\nFrom: Kai R. <kai.r@example.com>\nDate: Fri, Nov 13, 2026 at 3:20 PM\nSubject: Fwd: Quote request\nTo: QBC Team <team@qbc.example>\n\nOur contractor recommended you. We're in Montverde (34756), want the kitchen done in the next 2-3 months, budget is not sure yet, probably $15–25k. Cell 352-555-0199.\n\nKai"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Montverde (ZIP 34756) is in Lake County; phone, timeline and budget in the email."
+   }
+  },
+  {
+   "id": "B-59",
+   "received": "2026-11-13T17:45",
+   "split": "blind",
+   "category": "typos",
+   "form": {
+    "name": "Juniper S.",
+    "role": "",
+    "location": "st cloud",
+    "project": "Kitchen",
+    "units": "",
+    "budget": "$10–20K",
+    "timeline": "ASAP",
+    "phone": "407-555-0116",
+    "email": "juniper.s@example.com",
+    "source": "Meta ad",
+    "plans": "",
+    "message": "our dishwasher leaked n now theres mold in the sink cabinet. insurance is covering it, adjuster wants an estimate by next fri"
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": true,
+    "duplicateOf": null,
+    "why": "St. Cloud (Osceola); complete; leak, mold and an adjuster deadline make it urgent."
+   }
+  },
+  {
+   "id": "B-60",
+   "received": "2026-11-13T21:10",
+   "split": "blind",
+   "category": "voicemail",
+   "form": {
+    "name": "Stellan V.",
+    "role": "",
+    "location": "",
+    "project": "",
+    "units": "",
+    "budget": "",
+    "timeline": "",
+    "phone": "407-555-0161",
+    "email": "",
+    "source": "Voicemail",
+    "plans": "",
+    "message": "Voicemail transcript (0:33): Hey, this is Stellan in Apopka, I'm calling about new cabinets for our kitchen. We'd like to start after the holidays, budget's around eight to ten thousand. Call me back at 407 555 0161."
+   },
+   "label": {
+    "lane": "book",
+    "ask": [],
+    "urgent": false,
+    "duplicateOf": null,
+    "why": "Apopka (Orange); phone, timeline and budget in the transcript."
+   }
+  }
+ ]
+}
