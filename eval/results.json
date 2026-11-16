@@ -1,0 +1,1294 @@
+{
+ "generated": "eval/run.js",
+ "synthetic": true,
+ "n": 161,
+ "clock": "2026-11-09T10:00:00-05:00",
+ "before": {
+  "n": 161,
+  "laneOk": 85,
+  "lanePct": 52.8,
+  "fullOk": 76,
+  "fullPct": 47.2,
+  "leadsN": 131,
+  "leadOk": 85,
+  "leadPct": 64.9,
+  "ask": {
+   "n": 20,
+   "ok": 14,
+   "pct": 70
+  },
+  "urgent": {
+   "tp": 0,
+   "fp": 0,
+   "fn": 12,
+   "precision": null,
+   "recall": 0
+  },
+  "dup": {
+   "n": 9,
+   "ok": 0,
+   "pct": 0
+  },
+  "harmful": 33,
+  "confusion": {
+   "book": {
+    "book": 45,
+    "info": 0,
+    "trade": 0,
+    "order": 28,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "info": {
+    "book": 1,
+    "info": 13,
+    "trade": 0,
+    "order": 5,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "trade": {
+    "book": 5,
+    "info": 0,
+    "trade": 11,
+    "order": 7,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "order": {
+    "book": 0,
+    "info": 0,
+    "trade": 0,
+    "order": 16,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "duplicate": {
+    "book": 5,
+    "info": 1,
+    "trade": 0,
+    "order": 3,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "spam": {
+    "book": 0,
+    "info": 1,
+    "trade": 0,
+    "order": 13,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "decline": {
+    "book": 7,
+    "info": 0,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   }
+  },
+  "categories": {
+   "trade-volume": {
+    "n": 9,
+    "ok": 7,
+    "pct": 77.8
+   },
+   "location-format": {
+    "n": 15,
+    "ok": 0,
+    "pct": 0
+   },
+   "investor": {
+    "n": 13,
+    "ok": 3,
+    "pct": 23.1
+   },
+   "spam": {
+    "n": 14,
+    "ok": 0,
+    "pct": 0
+   },
+   "remodeler": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "bath": {
+    "n": 12,
+    "ok": 11,
+    "pct": 91.7
+   },
+   "kitchen": {
+    "n": 17,
+    "ok": 12,
+    "pct": 70.6
+   },
+   "out-of-area": {
+    "n": 16,
+    "ok": 16,
+    "pct": 100
+   },
+   "urgent": {
+    "n": 12,
+    "ok": 9,
+    "pct": 75
+   },
+   "tricky": {
+    "n": 10,
+    "ok": 8,
+    "pct": 80
+   },
+   "duplicate": {
+    "n": 9,
+    "ok": 0,
+    "pct": 0
+   },
+   "incomplete": {
+    "n": 17,
+    "ok": 11,
+    "pct": 64.7
+   },
+   "not-a-fit": {
+    "n": 7,
+    "ok": 0,
+    "pct": 0
+   },
+   "investor-single": {
+    "n": 3,
+    "ok": 2,
+    "pct": 66.7
+   }
+  },
+  "splits": {
+   "dev": {
+    "n": 121,
+    "ok": 66,
+    "pct": 54.5
+   },
+   "holdout": {
+    "n": 40,
+    "ok": 19,
+    "pct": 47.5
+   }
+  },
+  "misses": [
+   {
+    "id": "QR-0903",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0904",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "book",
+    "what": "Trade desk → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0905",
+    "category": "spam",
+    "split": "holdout",
+    "truth": "spam",
+    "pred": "info",
+    "what": "Spam → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-0909",
+    "category": "kitchen",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0913",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0918",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0922",
+    "category": "remodeler",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0923",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0925",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "book",
+    "what": "Duplicate → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0926",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0928",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0929",
+    "category": "not-a-fit",
+    "split": "dev",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0930",
+    "category": "investor",
+    "split": "holdout",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0931",
+    "category": "investor",
+    "split": "holdout",
+    "truth": "trade",
+    "pred": "book",
+    "what": "Trade desk → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0932",
+    "category": "location-format",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0933",
+    "category": "kitchen",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0934",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "order",
+    "what": "Duplicate → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0935",
+    "category": "investor",
+    "split": "holdout",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0938",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0939",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0940",
+    "category": "incomplete",
+    "split": "dev",
+    "truth": "info",
+    "pred": "order",
+    "what": "Needs info → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0943",
+    "category": "spam",
+    "split": "holdout",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0944",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0945",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0947",
+    "category": "not-a-fit",
+    "split": "dev",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0948",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0950",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0955",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0957",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0958",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0961",
+    "category": "location-format",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0964",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0965",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0967",
+    "category": "not-a-fit",
+    "split": "holdout",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0968",
+    "category": "trade-volume",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0969",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "info",
+    "pred": "info",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0970",
+    "category": "bath",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0972",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "book",
+    "what": "Trade desk → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0973",
+    "category": "not-a-fit",
+    "split": "dev",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0974",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0976",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "order",
+    "what": "Duplicate → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0977",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0978",
+    "category": "incomplete",
+    "split": "dev",
+    "truth": "info",
+    "pred": "order",
+    "what": "Needs info → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0979",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0983",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0984",
+    "category": "incomplete",
+    "split": "dev",
+    "truth": "info",
+    "pred": "order",
+    "what": "Needs info → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0985",
+    "category": "spam",
+    "split": "holdout",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0986",
+    "category": "duplicate",
+    "split": "holdout",
+    "truth": "duplicate",
+    "pred": "book",
+    "what": "Duplicate → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0989",
+    "category": "trade-volume",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "book",
+    "what": "Trade desk → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0990",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0992",
+    "category": "location-format",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0993",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-0996",
+    "category": "not-a-fit",
+    "split": "dev",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-0998",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1000",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1001",
+    "category": "not-a-fit",
+    "split": "holdout",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1002",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "book",
+    "what": "Trade desk → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1005",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "book",
+    "what": "Duplicate → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1006",
+    "category": "location-format",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1007",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "book",
+    "what": "Duplicate → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1008",
+    "category": "incomplete",
+    "split": "dev",
+    "truth": "info",
+    "pred": "book",
+    "what": "Needs info → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1010",
+    "category": "investor-single",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1011",
+    "category": "duplicate",
+    "split": "holdout",
+    "truth": "duplicate",
+    "pred": "order",
+    "what": "Duplicate → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1015",
+    "category": "kitchen",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1016",
+    "category": "tricky",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1017",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1018",
+    "category": "kitchen",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1023",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "info",
+    "what": "Duplicate → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-1026",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1027",
+    "category": "incomplete",
+    "split": "holdout",
+    "truth": "info",
+    "pred": "order",
+    "what": "Needs info → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1031",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1032",
+    "category": "kitchen",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1034",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1036",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1037",
+    "category": "incomplete",
+    "split": "holdout",
+    "truth": "info",
+    "pred": "order",
+    "what": "Needs info → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1039",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "info",
+    "pred": "info",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-1054",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "trade",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-1055",
+    "category": "not-a-fit",
+    "split": "dev",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1056",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1057",
+    "category": "location-format",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1058",
+    "category": "spam",
+    "split": "dev",
+    "truth": "spam",
+    "pred": "order",
+    "what": "Spam → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1059",
+    "category": "tricky",
+    "split": "dev",
+    "truth": "book",
+    "pred": "order",
+    "what": "Book measure → Order-taking",
+    "harmful": true,
+    "why": "an in-area customer would be told to measure their own kitchen"
+   },
+   {
+    "id": "QR-1060",
+    "category": "urgent",
+    "split": "dev",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-1061",
+    "category": "duplicate",
+    "split": "dev",
+    "truth": "duplicate",
+    "pred": "book",
+    "what": "Duplicate → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1062",
+    "category": "investor",
+    "split": "dev",
+    "truth": "trade",
+    "pred": "order",
+    "what": "Trade desk → Order-taking",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   }
+  ]
+ },
+ "after": {
+  "n": 161,
+  "laneOk": 156,
+  "lanePct": 96.9,
+  "fullOk": 153,
+  "fullPct": 95,
+  "leadsN": 131,
+  "leadOk": 129,
+  "leadPct": 98.5,
+  "ask": {
+   "n": 20,
+   "ok": 20,
+   "pct": 100
+  },
+  "urgent": {
+   "tp": 9,
+   "fp": 0,
+   "fn": 3,
+   "precision": 100,
+   "recall": 75
+  },
+  "dup": {
+   "n": 9,
+   "ok": 9,
+   "pct": 100
+  },
+  "harmful": 0,
+  "confusion": {
+   "book": {
+    "book": 73,
+    "info": 0,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "info": {
+    "book": 0,
+    "info": 19,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "trade": {
+    "book": 0,
+    "info": 0,
+    "trade": 23,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "order": {
+    "book": 0,
+    "info": 2,
+    "trade": 0,
+    "order": 14,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 0
+   },
+   "duplicate": {
+    "book": 0,
+    "info": 0,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 9,
+    "spam": 0,
+    "decline": 0
+   },
+   "spam": {
+    "book": 0,
+    "info": 2,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 12,
+    "decline": 0
+   },
+   "decline": {
+    "book": 1,
+    "info": 0,
+    "trade": 0,
+    "order": 0,
+    "duplicate": 0,
+    "spam": 0,
+    "decline": 6
+   }
+  },
+  "categories": {
+   "trade-volume": {
+    "n": 9,
+    "ok": 9,
+    "pct": 100
+   },
+   "location-format": {
+    "n": 15,
+    "ok": 15,
+    "pct": 100
+   },
+   "investor": {
+    "n": 13,
+    "ok": 13,
+    "pct": 100
+   },
+   "spam": {
+    "n": 14,
+    "ok": 12,
+    "pct": 85.7
+   },
+   "remodeler": {
+    "n": 7,
+    "ok": 7,
+    "pct": 100
+   },
+   "bath": {
+    "n": 12,
+    "ok": 12,
+    "pct": 100
+   },
+   "kitchen": {
+    "n": 17,
+    "ok": 17,
+    "pct": 100
+   },
+   "out-of-area": {
+    "n": 16,
+    "ok": 14,
+    "pct": 87.5
+   },
+   "urgent": {
+    "n": 12,
+    "ok": 12,
+    "pct": 100
+   },
+   "tricky": {
+    "n": 10,
+    "ok": 10,
+    "pct": 100
+   },
+   "duplicate": {
+    "n": 9,
+    "ok": 9,
+    "pct": 100
+   },
+   "incomplete": {
+    "n": 17,
+    "ok": 17,
+    "pct": 100
+   },
+   "not-a-fit": {
+    "n": 7,
+    "ok": 6,
+    "pct": 85.7
+   },
+   "investor-single": {
+    "n": 3,
+    "ok": 3,
+    "pct": 100
+   }
+  },
+  "splits": {
+   "dev": {
+    "n": 121,
+    "ok": 121,
+    "pct": 100
+   },
+   "holdout": {
+    "n": 40,
+    "ok": 35,
+    "pct": 87.5
+   }
+  },
+  "misses": [
+   {
+    "id": "QR-0905",
+    "category": "spam",
+    "split": "holdout",
+    "truth": "spam",
+    "pred": "info",
+    "what": "Spam → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-0916",
+    "category": "out-of-area",
+    "split": "holdout",
+    "truth": "order",
+    "pred": "info",
+    "what": "Order-taking → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-0943",
+    "category": "spam",
+    "split": "holdout",
+    "truth": "spam",
+    "pred": "info",
+    "what": "Spam → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-0957",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0974",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   },
+   {
+    "id": "QR-0995",
+    "category": "out-of-area",
+    "split": "holdout",
+    "truth": "order",
+    "pred": "info",
+    "what": "Order-taking → Needs info",
+    "harmful": false,
+    "why": "costs one extra question"
+   },
+   {
+    "id": "QR-1001",
+    "category": "not-a-fit",
+    "split": "holdout",
+    "truth": "decline",
+    "pred": "book",
+    "what": "Not a fit → Book measure",
+    "harmful": false,
+    "why": "a person would catch it on review"
+   },
+   {
+    "id": "QR-1036",
+    "category": "urgent",
+    "split": "holdout",
+    "truth": "book",
+    "pred": "book",
+    "what": "urgent, not flagged",
+    "harmful": false,
+    "why": "right lane, wrong detail"
+   }
+  ]
+ }
+}

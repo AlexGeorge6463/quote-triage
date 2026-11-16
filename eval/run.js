@@ -85,6 +85,8 @@ function report(b, a) {
   Object.keys(cat).sort((x, y) => cat[y] - cat[x]).forEach(k => {
     rows.push(`| ${k} | ${cat[k]} | ${p(b.categories[k].pct)} | ${a ? p(a.categories[k].pct) : '–'} |`);
   });
+  rows.push('');
+  rows.push('v1\'s 100% on out-of-area is the flip side of its 0% on location formats: any location it could not read exactly (a ZIP, "winter park, fl", a neighborhood) fell through to Order-taking, which happens to be right for real out-of-area towns and harmful for everyone else. v2 reads those formats and asks for a ZIP when it cannot place a town, which costs it two held-out towns that are missing from the place table.');
   const matrix = (m, title) => {
     rows.push('');
     rows.push(`## Confusion matrix, ${title}`);
