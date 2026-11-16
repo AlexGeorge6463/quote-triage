@@ -1,0 +1,14 @@
+{
+  "name": "quote-triage",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Ontology-first quote-request triage for a small cabinet business. SYNTHETIC data only. A person approves every action.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "eval": "node eval/run.js",
+    "report": "node eval/run.js --write",
+    "generate": "node scripts/generate.js"
+  },
+  "engines": { "node": ">=18" }
+}
