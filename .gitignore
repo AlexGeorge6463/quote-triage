@@ -1,0 +1,7 @@
+# Real leads never enter this repo. scripts/private-run.js refuses files inside any git repo;
+# these patterns are a second guard in case one is dropped here by mistake.
+private/
+*.private.*
+*leads*.csv
+*leads*.txt
+!test/**

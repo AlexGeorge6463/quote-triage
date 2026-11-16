@@ -4,7 +4,7 @@ A review queue for a small cabinet business. Each incoming quote request arrives
 
 It runs as one HTML page with no build step and no server. It is modeled on Palantir Foundry's objects, links and actions, so it can be ported there later. It does not run on Foundry.
 
-> **All data is SYNTHETIC.** Every name, phone (555-01xx), email (example domains) and message is invented by `scripts/generate.js`. Cities and ZIP codes are real places, used only to test the service-area rule. No real customer data and no data from any employer is used.
+> **All data is SYNTHETIC.** Every name, phone (555-01xx), email (example domains) and message is invented, by `scripts/generate.js` or by hand to `docs/BLIND-SPEC.md`. Cities and ZIP codes are real places, used only to test the service-area rule. No real customer data and no data from any employer is used.
 
 ![The review queue: what came in, the suggested action and why, the draft, and one-click approve](screenshots/review-queue.png)
 
@@ -16,27 +16,25 @@ Open `index.html` in a browser (download it, or run `python3 -m http.server` her
 2. **Open Kofi A.** He picked "Homeowner" and typed only a ZIP. The rules read Kissimmee (Osceola County) from the ZIP and "two rental houses" from his message, so the suggestion is the trade desk. The card shows every value and where it was read from.
 3. **Press A** (or click Approve). It is logged and the next request opens. **E** edits the draft or changes the action; **S** sends it back; **Undo** reverses it.
 4. **Open Lena M.'s repeat.** She wrote again with the phone number she forgot. Approving the merge fills in her first request, which re-routes itself from Needs info to Book measure.
-5. **Open Evaluation.** The same code runs on all 161 labeled synthetic requests, live in the browser.
+5. **Open Evaluation.** The same code runs on 221 labeled synthetic requests (161 generated, 60 blind), live in the browser.
 
 ## Results
 
-v1 was published Nov 13 and expected clean fields. Run on 161 realistic SYNTHETIC form submissions, it routed about half of them correctly. v2 adds an intake step and three screen-out lanes.
+Three SYNTHETIC test sets: 161 generated requests (with a 40-request holdout frozen before any fix), and 60 **blind** requests hand-written to [a spec](docs/BLIND-SPEC.md) committed first (typos, Spanish, voicemail transcripts, forwarded emails, one-liners), run once and never tuned on. Intervals are 95% Wilson.
 
-| | v1 | v2 |
+| | v1 (Nov 13) | v2 |
 | --- | --- | --- |
-| Routed to the labeled action, all 161 | 52.8% | **96.9%** |
-| Holdout: 40 requests with separate wording, committed before any fix | 47.5% | **87.5%** |
-| Real leads only (the four lanes v1 had) | 64.9% | 98.5% |
-| **Harmful misses**: a lead dropped, or the wrong promise made | 33 | **0** |
-| Drafts that ask for exactly what is missing | 70% | 100% |
-| Duplicates merged into the right request | 0% | 100% |
-| Urgent flag, recall | 0% | 75% |
+| **Harmful suggestions**, all 221 (a lead dropped, or the wrong promise) | 53 | **0** (upper bound 1.7%) |
+| False screen-outs: a real lead sent to spam, not-a-fit or duplicate | 0 of 177 (it had no such lanes) | **0 of 177** (upper bound 2.1%) |
+| **Routed right, 60 blind requests** | 32% | **53%** (41–65%) |
+| Routed right, the 161 it was built against | 53% | 97% |
+| Routed right, their 40-request holdout | 48% | 88% |
 
-![Evaluation: headline numbers, confusion matrix and per-category accuracy](screenshots/evaluation.png)
+**Read the blind number.** On wording the rules never saw, accuracy falls from 97% to 53%. What held is the part with money attached: across all 221 requests no suggestion would drop a lead or make a wrong promise if approved. When the rules are unsure they ask, so 24 of the 28 blind misses cost one extra question. The gaps are listed in [`eval/BLIND.md`](eval/BLIND.md): details given inside voicemails and forwarded emails, towns missing from the place table, Spanish, and repair or painting requests.
 
-**Read the holdout number, not the 100% on the dev split.** The fixes were written against the dev split, so of course it passes. The 40 held-out requests show what happens with wording the rules never saw. Five lane misses remain, all recoverable, and are listed in [`eval/REPORT.md`](eval/REPORT.md): two spam pitches unlike any in the dev set, two towns missing from the place table (the rules ask for a ZIP rather than guess), and a "labor only" request. Three urgent cases worded unlike the dev set ("a pipe burst", "the open house is Saturday") were routed right but not flagged. They are left unfixed on purpose: fixing them would turn the holdout into more dev data.
+![Evaluation: harmful-miss bound, the blind result, confusion matrix, writing styles and business KPIs](screenshots/evaluation.png)
 
-## What the evaluation found, and what changed
+## What the first evaluation found in v1, and the fix
 
 | v1 failure on raw forms | Harm | v2 fix |
 | --- | --- | --- |
@@ -47,6 +45,25 @@ v1 was published Nov 13 and expected clean fields. Run on 161 realistic SYNTHETI
 | Units read only from the units box | 12 investors and trade jobs got the homeowner script | Unit counts read from words and the message; rental language makes the customer an investor |
 | A partial phone ("407-555") counted as present | a reply nobody could call back | Fewer than 10 digits is missing |
 | No urgency | a leak and a closing date waited their turn | **Urgent** flag for a dated deadline or active damage. "ASAP" alone is a timeline, not an emergency. |
+
+## Business KPIs
+
+[`eval/KPI.md`](eval/KPI.md) compares the tool with a person working by hand. The baseline is a reader who opens requests in arrival order, applies the same rules **without error**, and replies from **saved templates**; a weaker baseline types each reply from scratch. Each number says whether it is measured, modeled or simulated.
+
+| KPI | Tool | By hand, templates | By hand, from scratch |
+| --- | --- | --- | --- |
+| Time to a suggested action (measured) | under 0.1 ms | none until someone opens it | same |
+| Approvals per minute, 161 synthetic (modeled) | **2.9** | 2.4 | 0.7 |
+| Approvals per minute, 60 blind (modeled) | 2.1 | 2.2 | 0.6 |
+| Leads with an approved next step within 1 hour, 8am–8pm, queue checked hourly (simulated) | 95% | 95% | 95% |
+
+What that says: the tool is about 4× faster than typing replies and about 19% faster than a disciplined person with templates, but only on clean requests; on messy ones every wrong suggestion has to be fixed. It does **not** move the 1-hour KPI. That number depends on how often someone checks the queue (98% at every 30 minutes, 48% at every 2 hours). At hourly checks, every lead that missed the hour arrived after the day's last check.
+
+Reviewer pace is modeled with the keystroke-level model, not timed. The Review tab has a pace counter that measures your own decisions per minute once you have made three.
+
+## Real leads, privately
+
+[`scripts/private-run.js`](scripts/private-run.js) runs the rules on real leads kept **outside any git repository** and prints **only counts**: what the tool would suggest, what the team actually did, and where they differ. It refuses files inside a repo, writes nothing, and checks its own output for every name, phone, email, town and message fragment before printing. See [`docs/PRIVATE-RUN.md`](docs/PRIVATE-RUN.md). No real lead is in this repository.
 
 ## How it decides
 
@@ -73,11 +90,13 @@ Object types QuoteRequest, Customer, Place and Channel (plus Project and TradePa
 ## Run the checks
 
 ```
-npm test                  # 47 tests: intake, rules, draft guardrails on all 161 requests, eval ratchet
-npm run eval              # v1 vs v2 on the synthetic set
+npm test                  # 69 tests: intake, rules, draft guardrails, eval and KPI ratchets, private-harness leak checks
+npm run eval              # v1 vs v2 on the 161 synthetic requests
+npm run blind             # the blind holdout (recorded once in eval/BLIND.md; a test fails if the rules move it)
+npm run kpi               # rewrite eval/KPI.md and the browser copy of the KPIs
 npm run report            # rewrite eval/REPORT.md and eval/results.json
 npm run generate          # rebuild the synthetic set (deterministic, seed 20261116)
-python3 test/ui_smoke.py  # 18 browser checks (needs Python Playwright)
+python3 test/ui_smoke.py  # 21 browser checks (needs Python Playwright)
 ```
 
 No dependencies. Node 18 or newer.
@@ -89,14 +108,17 @@ No dependencies. Node 18 or newer.
 | `index.html` | The review screen: queue, card, actions, log, Evaluation and How it works |
 | `src/places.js` · `src/intake.js` · `src/triage.js` · `src/drafts.js` | Place table · raw form → QuoteRequest · rules · draft slot |
 | `data/requests.json` | The 161 SYNTHETIC requests and their labels (`requests.js` is the same data for the browser) |
+| `data/blind/requests.json` | The 60 blind SYNTHETIC requests, written to `docs/BLIND-SPEC.md` |
+| `scripts/private-run.js` | Runs real leads privately and prints only counts |
 | `scripts/generate.js` | How the set was made, and why each label is what it is |
-| `eval/` | Metrics, the v1 baseline kept verbatim, the report |
+| `eval/` | Metrics, Wilson intervals, the v1 baseline kept verbatim, and three reports: `REPORT.md`, `BLIND.md`, `KPI.md` |
 | `docs/ARCHITECTURE.md` | Objects, links, actions, functions and how they would port |
 
 ## Limits
 
-- **Synthetic only.** No real request has been routed. These numbers come from a regression suite for the written policy, not from real-world accuracy.
-- **Same author for data, labels and rules.** The holdout guards against tuning to exact wording, but it is not a blind test.
+- **Synthetic only.** No real request is in these numbers. They come from test suites for the written policy, not from real-world accuracy.
+- **Same author for data, labels and rules.** The blind set was written to a spec committed first and run once, but its author also wrote the rules. It is not an independent test.
+- **Reviewer time is modeled,** with stated constants, not measured on people.
 - **No model runs yet.** The draft slot is templates, held to the contract above.
 - **The place table is a sample.** A real build would load a full ZIP-to-county dataset.
 - **v2's new lanes and its urgency rule are judgment calls** made while building. The four original routing rules are QBC's.

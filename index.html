@@ -307,6 +307,9 @@ footer a { color: var(--muted); }
 <script src="eval/metrics.js"></script>
 <script src="eval/baseline-v1.js"></script>
 <script src="data/requests.js"></script>
+<script src="data/blind/requests.js"></script>
+<script src="eval/stats.js"></script>
+<script src="eval/kpi-data.js"></script>
 <script>
 (function () {
 'use strict';
@@ -318,7 +321,7 @@ const REQ = new Map(D.requests.map(r => [r.id, r]));
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const state = { tab: 'review', view: 'inbox', lane: 'all', selected: null, status: {}, edits: {}, patches: {}, mergedFrom: {}, log: [], editing: false, undo: null, evalEngine: 'v2' };
+const state = { tab: 'review', view: 'inbox', lane: 'all', selected: null, status: {}, edits: {}, patches: {}, mergedFrom: {}, log: [], times: [], editing: false, undo: null, evalEngine: 'v2' };
 const joinList = a => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
 let RES = [], BY = new Map();
 
@@ -346,6 +349,13 @@ function visible() {
 function sortedOpen(list) { return list.filter(isOpen).sort(T.priority); }
 
 /* ---------- review: stats, chips, queue ---------- */
+// Your real pace this session: decisions per minute between your first and last decision (needs 3+).
+function pace() {
+  const t = state.times;
+  if (t.length < 3) return '';
+  const mins = (t[t.length - 1] - t[0]) / 60000;
+  return mins > 0 ? ` · your pace ${((t.length - 1) / mins).toFixed(1)}/min` : '';
+}
 function renderStats() {
   const inView = RES.filter(x => state.view === 'all' || REQ.get(x.id).inbox);
   const open = inView.filter(isOpen);
@@ -357,7 +367,7 @@ function renderStats() {
     `<div class="stat urgent"><b>${urgent}</b><span>urgent: a deadline or damage</span></div>`,
     late == null ? `<div class="stat"><b>${open.filter(x => LANES[laneOf(x)].group === 'screen').length}</b><span>to screen out</span></div>`
       : `<div class="stat${late ? ' urgent' : ''}"><b>${late}</b><span>leads past the 24h callback</span></div>`,
-    `<div class="stat"><b>${approved}</b><span>approved by you</span></div>`
+    `<div class="stat"><b>${approved}</b><span>approved by you${pace()}</span></div>`
   ].join('');
   $('tab-n').textContent = RES.filter(x => REQ.get(x.id).inbox && isOpen(x)).length + ' open';
 }
@@ -518,7 +528,7 @@ function approve(x, extra) {
     const now = BY.get(x.dup.of).lane;
     logLine(`${x.dup.of} · merged in ${joinList(x.dup.fills)} from ${x.id}${was !== now ? ` · re-triaged: ${LANES[was].label} → ${LANES[now].label}` : ''}`);
   }
-  state.undo = before;
+  state.undo = before; state.times.push(Date.now());
   toast(`Approved: ${LANES[lane].action} for ${x.q.name.replace(/\.$/, '')}.`);
   state.selected = nextIn(seq, x.id);
   state.editing = false;
@@ -541,7 +551,7 @@ function sendBack(x) {
   const before = { status: state.status[x.id], patches: Object.assign({}, state.patches), edits: Object.assign({}, state.edits), log: state.log.slice(), selected: x.id };
   state.status[x.id] = { verdict: 'sent back', time: nowTime(), at: Date.now(), text: 'sent back to the QBC team to handle by hand' };
   logLine(`${x.id} · Sent back for a person to handle · ${x.q.name}`);
-  state.undo = before;
+  state.undo = before; state.times.push(Date.now());
   toast(`Sent back: ${x.q.name.replace(/\.$/, '')}.`);
   state.selected = nextIn(seq, x.id);
   renderReview();
@@ -550,7 +560,7 @@ function undo() {
   const u = state.undo; if (!u) return;
   const id = u.selected;
   if (u.status) state.status[id] = u.status; else delete state.status[id];
-  state.patches = u.patches; state.mergedFrom = u.mergedFrom || state.mergedFrom; state.edits = u.edits; state.log = u.log; state.undo = null;
+  state.patches = u.patches; state.mergedFrom = u.mergedFrom || state.mergedFrom; state.edits = u.edits; state.times.pop(); state.log = u.log; state.undo = null;
   compute(); state.selected = id; renderReview(); hideToast();
 }
 let toastTimer = null;
@@ -581,35 +591,49 @@ function setView(v) {
 let EV = null;
 function evaluate() {
   if (EV) return EV;
+  const BL = window.QT.blind.requests;
   const v2 = M.score(D.requests, T.runAll(D.requests));
   const v1 = M.score(D.requests, B.runAll(D.requests));
-  EV = { v2, v1 };
+  const bv2 = M.score(BL, T.runAll(BL));
+  const bv1 = M.score(BL, B.runAll(BL));
+  EV = { v2, v1, bv2, bv1 };
   return EV;
 }
+const W = (x, n) => window.QT.stats.wilson(x, n);
+const p0 = v => (v == null ? '–' : Math.round(v * 100) + '%');
 function renderEval() {
-  const { v2, v1 } = evaluate();
-  const m = state.evalEngine === 'v2' ? v2 : v1;
+  const { v2, v1, bv2, bv1 } = evaluate();
+  const K = window.QT.kpi;
+  const eng = { v2: v2, blind: bv2, v1: v1 }[state.evalEngine] || v2;
   const cats = Object.keys(v2.categories).sort((a, b) => v2.categories[b].n - v2.categories[a].n);
-  const max = Math.max(...ORDER.flatMap(t => ORDER.map(p => (t === p ? 0 : m.confusion[t][p]))), 1);
+  const styles = ['clean', 'typos', 'spanish', 'voicemail', 'forwarded', 'minimal'];
+  const max = Math.max(...ORDER.flatMap(t => ORDER.map(p => (t === p ? 0 : eng.confusion[t][p]))), 1);
   const cell = (t, p) => {
-    const v = m.confusion[t][p];
+    const v = eng.confusion[t][p];
     if (t === p) return `<td class="diag" style="background:color-mix(in srgb, var(--accent) ${v ? 18 + Math.min(60, v * 1.5) : 0}%, var(--soft))" title="${LANES[t].label}: ${v} right">${v || '·'}</td>`;
     if (!v) return '<td>·</td>';
     const sev = M.severity(t, p);
     return `<td class="${sev.harmful ? 'harm' : 'soft'}" style="background:color-mix(in srgb, var(--${sev.harmful ? 'harm' : 'warn'}) ${12 + (v / max) * 40}%, var(--soft))" title="${v}: labeled ${LANES[t].label}, proposed ${LANES[p].label}. ${sev.harmful ? 'Harmful' : 'Recoverable'}: ${sev.why}">${v}</td>`;
   };
-  $('tab-acc').textContent = v2.lanePct + '%';
+  const harmAll = W(v2.harmful + bv2.harmful, v2.n + bv2.n);
+  const bl = W(bv2.laneOk, bv2.n);
+  const toInfo = bv2.misses.filter(mi => mi.pred === 'info' && mi.truth !== 'info').length;
+  const bLaneMiss = bv2.n - bv2.laneOk;
+  const pc = K.pace.synthetic, pb = K.pace.blind, cur = K.sims['Current pace'].byCadence;
+  const bar = (pct, cls) => `<span class="t ${cls}"><span style="width:${pct}%"></span></span>`;
+  const engName = { v2: 'v2 · 161 built against', blind: 'v2 · 60 blind', v1: 'v1 · 161' };
+  $('tab-acc').textContent = (v2.n + bv2.n) + ' tests';
   $('p-eval').innerHTML = `
     <div class="hero">
-      <div class="stat"><b>${D.requests.length}</b><span>SYNTHETIC requests, each labeled from QBC's written routing policy</span></div>
-      <div class="stat"><b>${v2.lanePct}%</b><span>routed to the labeled action (${v2.laneOk}/${v2.n})</span><span class="was">v1: ${v1.lanePct}%</span></div>
-      <div class="stat"><b>${v2.splits.holdout.pct}%</b><span>on ${v2.splits.holdout.n} held-out requests, frozen before any fix</span><span class="was">v1: ${v1.splits.holdout.pct}%</span></div>
-      <div class="stat"><b>${v2.harmful}</b><span>harmful misses: a lead dropped or a wrong promise</span><span class="was">v1: ${v1.harmful}</span></div>
+      <div class="stat"><b>${v2.harmful + bv2.harmful}</b><span>harmful suggestions in ${v2.n + bv2.n} SYNTHETIC requests (a lead dropped or a wrong promise). 95% upper bound ${window.QT.stats.pct1(harmAll.hi)}</span><span class="was">v1: ${v1.harmful} + ${bv1.harmful} blind</span></div>
+      <div class="stat"><b>${p0(bl.p)}</b><span>routed right on ${bv2.n} blind requests, written to a spec and run once (95% CI ${p0(bl.lo)}–${p0(bl.hi)})</span><span class="was">v1: ${p0(bv1.laneOk / bv1.n)}</span></div>
+      <div class="stat"><b>${p0(v2.laneOk / v2.n)}</b><span>on the ${v2.n} it was built against; ${p0(v2.splits.holdout.ok / v2.splits.holdout.n)} on their ${v2.splits.holdout.n}-request holdout</span><span class="was">v1: ${p0(v1.laneOk / v1.n)}</span></div>
+      <div class="stat"><b>${toInfo} of ${bLaneMiss}</b><span>blind misses turned into one extra question instead of a wrong action: when unsure, it asks</span></div>
     </div>
     <div class="two">
       <section class="panel">
         <div class="panel-h"><h2>Confusion matrix</h2>
-          <div class="seg" role="group" aria-label="Which rules"><button type="button" data-eng="v2" aria-pressed="${state.evalEngine === 'v2'}">v2 (now)</button><button type="button" data-eng="v1" aria-pressed="${state.evalEngine === 'v1'}">v1 (before)</button></div>
+          <div class="seg" role="group" aria-label="Which run">${['v2', 'blind', 'v1'].map(k => `<button type="button" data-eng="${k}" aria-pressed="${state.evalEngine === k}">${engName[k]}</button>`).join('')}</div>
         </div>
         <div class="pad">
           <p class="sec-l" style="text-align:center">Rows: the labeled action · columns: what the rules proposed</p>
@@ -621,27 +645,41 @@ function renderEval() {
         </div>
       </section>
       <section class="panel">
-        <div class="panel-h"><h2>By category</h2><span class="meta">v2 vs v1</span></div>
+        <div class="panel-h"><h2>Blind set, by writing style</h2><span class="meta">v2 vs v1 · run once</span></div>
         <div class="pad">
           <div class="keyrow"><span><i style="background:var(--accent)"></i>v2</span><span><i style="background:var(--muted);opacity:.55"></i>v1</span></div>
-          <div class="cats">${cats.map(k => `<div class="cat"><span>${k} <span style="color:var(--muted);font-family:var(--mono);font-size:11px">${v2.categories[k].n}</span></span>
-            <span class="tr"><span class="t v2"><span style="width:${v2.categories[k].pct}%"></span></span><span class="t v1"><span style="width:${v1.categories[k].pct}%"></span></span></span>
-            <span class="v">${Math.round(v2.categories[k].pct)}%</span></div>`).join('')}</div>
+          <div class="cats">${styles.map(k => `<div class="cat"><span>${k} <span style="color:var(--muted);font-family:var(--mono);font-size:11px">${bv2.categories[k].n}</span></span>
+            <span class="tr">${bar(bv2.categories[k].pct, 'v2')}${bar(bv1.categories[k].pct, 'v1')}</span><span class="v">${bv2.categories[k].ok}/${bv2.categories[k].n}</span></div>`).join('')}</div>
+          <p class="method" style="margin:12px 0 0">Clean forms hold up. Voicemails, forwarded emails and one-liners carry the phone, timeline or budget in the text, and the rules only read them from form fields, so they ask again. Towns missing from the place table get a question instead of a guess. Spanish wording for rentals, installs and loan pitches is not read.</p>
         </div>
       </section>
     </div>
     <section class="panel">
-      <div class="panel-h"><h2>What v2 still gets wrong</h2><span class="meta">${v2.misses.length} of ${v2.n} · ${v2.harmful ? v2.harmful + ' harmful' : 'none harmful'}</span></div>
+      <div class="panel-h"><h2>Business KPIs</h2><span class="meta">synthetic · <a href="eval/KPI.md">eval/KPI.md</a></span></div>
+      <div class="pad">
+        <div class="tbl"><table class="misses">
+          <thead><tr><th>KPI</th><th>Tool</th><th>By hand, saved templates</th><th>By hand, from scratch</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Time to a suggested action</td><td>${K.computeMsPerRequest.toFixed(2)} ms</td><td colspan="2">none until a person opens it</td><td>measured</td></tr>
+            <tr><td>Approvals per minute, 161 synthetic</td><td><b>${pc.tool.perMin.toFixed(1)}</b></td><td>${pc.template.perMin.toFixed(1)}</td><td>${pc.scratch.perMin.toFixed(1)}</td><td>modeled</td></tr>
+            <tr><td>Approvals per minute, 60 blind</td><td><b>${pb.tool.perMin.toFixed(1)}</b></td><td>${pb.template.perMin.toFixed(1)}</td><td>${pb.scratch.perMin.toFixed(1)}</td><td>modeled</td></tr>
+            <tr><td>Leads with an approved next step within 1 h, checks every 60 min</td><td>${p0(cur[60].tool.within1h.p)}</td><td>${p0(cur[60].template.within1h.p)}</td><td>${p0(cur[60].scratch.within1h.p)}</td><td>simulated</td></tr>
+            <tr><td>Same, checks every 30 / 120 min</td><td>${p0(cur[30].tool.within1h.p)} / ${p0(cur[120].tool.within1h.p)}</td><td>${p0(cur[30].template.within1h.p)} / ${p0(cur[120].template.within1h.p)}</td><td>${p0(cur[30].scratch.within1h.p)} / ${p0(cur[120].scratch.within1h.p)}</td><td>simulated</td></tr>
+          </tbody></table></div>
+        <p class="method" style="margin:10px 0 0"><b>What it says.</b> Against a person who types every reply, the tool is about ${Math.round(pc.tool.perMin / pc.scratch.perMin)}× faster. Against a disciplined person with saved templates it is about ${Math.round((pc.tool.perMin / pc.template.perMin - 1) * 100)}% faster on clean requests and no faster on messy ones, because each wrong suggestion has to be fixed. Response time is set by how often someone checks the queue, not by triage: every late lead at 60-minute checks arrived after the day's last check.</p>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Misses · ${engName[state.evalEngine]}</h2><span class="meta">${eng.misses.length} of ${eng.n} · ${eng.harmful ? eng.harmful + ' harmful' : 'none harmful'}</span></div>
       <div class="tbl"><table class="misses">
-        <thead><tr><th>Request</th><th>Split</th><th>Miss</th><th>What it would cost</th></tr></thead>
-        <tbody>${v2.misses.map(mi => `<tr><td><button type="button" class="linkish" data-open="${mi.id}">${mi.id}</button> <span style="color:var(--muted)">${esc(mi.category)}</span></td><td>${mi.split}</td><td>${esc(mi.what)}</td><td>${mi.harmful ? '<b style="color:var(--harm)">harmful</b>: ' : ''}${esc(mi.why)}</td></tr>`).join('')}</tbody>
+        <thead><tr><th>Request</th><th>Kind</th><th>Miss</th><th>What it would cost</th></tr></thead>
+        <tbody>${eng.misses.map(mi => `<tr><td>${REQ.has(mi.id) ? `<button type="button" class="linkish" data-open="${mi.id}">${mi.id}</button>` : mi.id}</td><td>${esc(mi.category)}</td><td>${esc(mi.what)}</td><td>${mi.harmful ? '<b style="color:var(--harm)">harmful</b>: ' : ''}${esc(mi.why)}</td></tr>`).join('')}</tbody>
       </table></div>
     </section>
     <section class="panel"><div class="pad method">
-      <p><b>How this is measured.</b> ${D.requests.length} requests from <code>scripts/generate.js</code>: kitchens and baths, sizes, timelines, out-of-area towns, spam, incomplete forms, duplicates, urgent cases, investors and tricky negatives (a real lead with a link, a prompt-injection line). Each label is the action QBC's written policy requires, written per scenario; the generator imports none of the triage code.</p>
-      <p><b>Holdout.</b> ${v2.splits.holdout.n} requests use separate phrasing and were committed before any fix. v2 scores ${v2.splits.dev.pct}% on the ${v2.splits.dev.n} it was fixed against and ${v2.splits.holdout.pct}% on the holdout. The gap is the honest number.</p>
-      <p><b>Limits.</b> The same author wrote the data, the labels and the rules, so this is a regression suite for the policy, not real-world accuracy. Full report: <a href="eval/REPORT.md">eval/REPORT.md</a>.</p>
-      <p><b>Other checks.</b> Drafts ask for exactly what is missing: v2 ${v2.ask.pct}% (v1 ${v1.ask.pct}%). Urgent flag precision/recall ${v2.urgent.precision}% / ${v2.urgent.recall}%. Duplicates merged into the right request: ${v2.dup.pct}%.</p>
+      <p><b>Three test sets, all SYNTHETIC.</b> ${v2.n} generated requests (<code>scripts/generate.js</code>), with a ${v2.splits.holdout.n}-request holdout frozen before any fix; and ${bv2.n} blind requests hand-written to <a href="docs/BLIND-SPEC.md">a spec</a> committed first (typos, Spanish, voicemail transcripts, forwarded emails, one-liners), run once and not tuned on. Labels are the action QBC's written rules require.</p>
+      <p><b>Read the blind number.</b> ${p0(v2.laneOk / v2.n)} on the set the rules were built against falls to ${p0(bl.p)} on wording they never saw. What held is the part that matters most: no harmful suggestion in ${v2.n + bv2.n}.</p>
+      <p><b>Limits.</b> One author wrote the data, the labels and the rules, so even the blind set is not independent. Reviewer pace is modeled, not timed: use the pace counter on the Review tab to time a real session. Reports: <a href="eval/REPORT.md">REPORT.md</a>, <a href="eval/BLIND.md">BLIND.md</a>, <a href="eval/KPI.md">KPI.md</a>.</p>
     </div></section>`;
   $('p-eval').querySelectorAll('[data-eng]').forEach(b => b.addEventListener('click', () => { state.evalEngine = b.dataset.eng; renderEval(); }));
   $('p-eval').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => { setTab('review'); setView('all'); select(b.dataset.open, { reveal: true }); }));
@@ -735,7 +773,7 @@ const STEPS = [
   { title: 'The suggestion, and why', text: 'The rules read Kissimmee (Osceola County) from the ZIP and “two rental houses” from the message, so he is an investor with 2 units: the trade desk calls first. Rules pick the action; the draft only words it.', target: () => $('suggest') },
   { title: 'One click, by a person', text: 'Nothing is sent until someone approves. Approve, edit the draft, change the action or send it back. Press Next to approve this one; the next request opens on its own.', target: () => $('approve') && $('approve').closest('.actbar') },
   { title: 'Not every request is a lead', text: 'Lena wrote again with the phone number she forgot. Approving the merge fills in her first request, which then re-routes from Needs info to Book measure. Watch the log.', target: () => document.querySelector('.card'), before: () => { const x = BY.get('QR-1062'); if (x && !state.status[x.id]) approve(x); hideToast(); select('QR-1061', { focus: false }); } },
-  { title: 'Is it right?', text: () => { const { v1, v2 } = evaluate(); return `The same code runs on ${v2.n} labeled SYNTHETIC requests, live in your browser. v1 matched ${Math.round(v1.lanePct)}% with ${v1.harmful} harmful misses; v2 matches ${Math.round(v2.lanePct)}% (${Math.round(v2.splits.holdout.pct)}% on the held-out set) with ${v2.harmful || 'none'}.`; }, target: () => document.querySelector('#p-eval .hero'), before: () => { const x = BY.get('QR-1061'); if (x && !state.status[x.id]) approve(x); hideToast(); setTab('eval'); } }
+  { title: 'Is it right?', text: () => { const { v2, bv2 } = evaluate(); return `The same code runs on ${v2.n + bv2.n} labeled SYNTHETIC requests, live in your browser. It matches ${Math.round(v2.lanePct)}% of the ${v2.n} it was built against, but only ${Math.round(bv2.lanePct)}% of ${bv2.n} blind ones written in messier language. What held: ${v2.harmful + bv2.harmful === 0 ? 'not one' : v2.harmful + bv2.harmful} harmful suggestion${v2.harmful + bv2.harmful === 1 ? '' : 's'}. When unsure, it asks.`; }, target: () => document.querySelector('#p-eval .hero'), before: () => { const x = BY.get('QR-1061'); if (x && !state.status[x.id]) approve(x); hideToast(); setTab('eval'); } }
 ];
 function firstId() { const o = ordered(); return o.length ? o[0].id : null; }
 let ring, card;
@@ -783,7 +821,7 @@ const h = location.hash.slice(1);
 if (h === 'eval' || h === 'how') setTab(h);
 else if (h === 'tour') startTour();
 else if (/^QR-\d+$/.test(h) && BY.has(h)) { if (!REQ.get(h).inbox) setView('all'); select(h, { focus: false }); }
-$('tab-acc').textContent = evaluate().v2.lanePct + '%';
+$('tab-acc').textContent = (D.requests.length + window.QT.blind.requests.length) + ' tests';
 window.QT.app = { state, approve: id => approve(BY.get(id)), select, setTab, setView, startTour };
 })();
 </script>

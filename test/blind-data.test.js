@@ -40,3 +40,9 @@ test('labels are complete; duplicates point back in time; urgent only on leads',
     assert.ok(Date.parse(r.received + ':00-05:00') < Date.parse(blind.clock), r.id);
   }
 });
+
+test('the browser copies match their JSON sources', () => {
+  assert.deepEqual(require('../data/blind/requests.js'), blind);
+  assert.deepEqual(require('../eval/kpi-data.js'), require('../eval/kpi.json'));
+  assert.deepEqual(require('../eval/blind-results.js'), require('../eval/blind-results.json'));
+});

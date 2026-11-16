@@ -7,6 +7,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 URL = (ROOT / 'index.html').as_uri()
 RESULTS = json.loads((ROOT / 'eval' / 'results.json').read_text())
+BLIND = json.loads((ROOT / 'eval' / 'blind-results.json').read_text())
 fails = []
 def check(cond, msg):
     print(('ok   ' if cond else 'FAIL ') + msg)
@@ -42,9 +43,15 @@ async def main():
         await pg.click('#row-QR-1053'); await pg.keyboard.press('e')
         await pg.select_option('#lane-sel', 'book'); await pg.click('#save-approve'); await pg.wait_for_timeout(100)
         check('override: rules said Order-taking' in await pg.inner_text('#log'), 'a changed action is logged as an override')
+        await pg.click('#row-QR-1041'); await pg.keyboard.press('a'); await pg.wait_for_timeout(100)
+        check('your pace' in await pg.inner_text('#stats'), 'after three decisions the pace counter shows a measured rate')
         await pg.click('#tab-eval'); await pg.wait_for_timeout(200)
         hero = await pg.inner_text('.hero')
-        check(f"{RESULTS['after']['lanePct']}%" in hero and str(RESULTS['after']['harmful']) in hero, 'the Evaluation tab matches eval/results.json')
+        blind_pct = f"{round(100 * BLIND['v2']['lane']['x'] / BLIND['v2']['lane']['n'])}%"
+        check(blind_pct in hero and f"{round(RESULTS['after']['lanePct'])}%" in hero, 'the Evaluation tab leads with the blind result and matches the recorded reports')
+        check('business kpis' in (await pg.inner_text('#p-eval')).lower(), 'the Evaluation tab shows the business KPIs')
+        await pg.click('[data-eng="blind"]'); await pg.wait_for_timeout(100)
+        check('B-' in await pg.inner_text('table.misses:last-of-type') or 'B-' in await pg.inner_text('#p-eval'), 'the blind run can be shown in the matrix and the miss list')
         check(await pg.evaluate("document.querySelectorAll('table.mx td').length") == 49, 'the confusion matrix is 7 by 7')
         await pg.click('#tab-how'); await pg.wait_for_timeout(100)
         check('duplicate of' in await pg.inner_text('#p-how'), 'How it works lists the duplicate-of link')

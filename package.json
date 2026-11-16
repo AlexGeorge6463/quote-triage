@@ -8,7 +8,13 @@
     "test": "node --test test/*.test.js",
     "eval": "node eval/run.js",
     "report": "node eval/run.js --write",
-    "generate": "node scripts/generate.js"
+    "generate": "node scripts/generate.js",
+    "blind": "node eval/blind.js",
+    "kpi": "node eval/kpi.js --write && node scripts/build-browser-data.js",
+    "browser-data": "node scripts/build-browser-data.js",
+    "private-run": "node scripts/private-run.js"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
