@@ -32,14 +32,14 @@
       case 'book':
         return `${hi(q)}, thanks for reaching out to Quality Built Cabinets about your ${scopeWord(q)}. We do a free in-home measure.${install} Would any of these work: [slot 1], [slot 2] or [slot 3]?`;
       case 'info':
-        return `${hi(q)}, thanks for your request about your ${scopeWord(q)}. To put your quote together, could you send ${joinList(r.ask.map(a => ASK_WORDS[a]))}?${install} We'll get back to you within 24 hours.`;
+        return `${hi(q)}, thanks for your request about your ${scopeWord(q)}. To put your quote together, could you send ${r.ask && r.ask.length ? joinList(r.ask.map(a => ASK_WORDS[a])) : 'a few more details'}?${install} We'll get back to you within 24 hours.`;
       case 'trade':
-        if (q.units < 10) return `${hi(q)}, thanks for reaching out to Quality Built Cabinets about your ${q.units} units. The QBC team will call you within 24 hours to talk through the units, then set up a free measure.${install}`;
+        if (q.units < 10 || !r.ask) return `${hi(q)}, thanks for reaching out to Quality Built Cabinets about your ${q.units > 1 ? q.units + ' units' : scopeWord(q)}. The QBC team will call you within 24 hours to talk it through, then set up a free measure.${install}`;
         return r.ask.includes('plans')
           ? `${hi(q)}, thanks for including Quality Built Cabinets. Could you send the unit plans and your bid date? We'll price each unit type and reply within 24 hours.`
           : `${hi(q)}, thanks for including Quality Built Cabinets. We'll price each unit type from the plans and send it ahead of your bid date.`;
       case 'order':
-        return `${hi(q)}, thanks for reaching out to Quality Built Cabinets. ${q.place.city} is outside the area where we measure in person, but we can still supply your cabinets: send us your measurements and the item codes you want, and we'll quote it and ship it to you. Since you'd be measuring, the sizes are yours to confirm.${install}`;
+        return `${hi(q)}, thanks for reaching out to Quality Built Cabinets. ${q.place && q.place.known ? q.place.city : 'Your address'} is outside the area where we measure in person, but we can still supply your cabinets: send us your measurements and the item codes you want, and we'll quote it and ship it to you. Since you'd be measuring, the sizes are yours to confirm.${install}`;
       case 'decline':
         return `${hi(q)}, thanks for thinking of Quality Built Cabinets. We supply cabinets only and don't do installation, so this one isn't a fit for us. If you need new cabinets down the road, we'd be glad to help.`;
       default:

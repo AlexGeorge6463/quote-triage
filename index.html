@@ -4,416 +4,788 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QBC Quote Triage</title>
-<!-- Quote Triage: standalone prototype. All data is SYNTHETIC. MIT License, see LICENSE. -->
+<meta name="description" content="A review queue that sorts incoming cabinet quote requests and proposes an action with a reason. A person approves every action. SYNTHETIC data.">
+<!-- Quote Triage v2. All data is SYNTHETIC. MIT License, see LICENSE. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: an ops console. Queue on the left, the selected object on the right, the ontology and action log below. Stacks to one column on phones. */
 :root {
-  --bg: #f3f4f2;
-  --panel: #ffffff;
-  --ink: #1d2422;
-  --muted: #5b6662;
-  --line: #d9ddd9;
-  --accent: #2d5f4a;      /* lacquered cabinet green */
-  --accent-soft: #e2ece7;
-  --book: #2d5f4a;
-  --info: #9a6b12;
-  --trade: #2f5a8a;
-  --out: #8a3b3b;
-  --chip-book: #e2ece7;
-  --chip-info: #f5ecd8;
-  --chip-trade: #e1e9f3;
-  --chip-out: #f3e2e2;
+  --bg: #f3f4f2; --panel: #ffffff; --ink: #1d2422; --muted: #5b6662; --line: #d9ddd9; --soft: #eef0ee;
+  --accent: #2d5f4a; --accent-soft: #e2ece7; --on-accent: #ffffff;
+  --book: #2d5f4a; --info: #8a5f0e; --trade: #2f5a8a; --order: #8a3b3b; --duplicate: #55507e; --spam: #5f6563; --decline: #7a5136;
+  --chip-book: #e2ece7; --chip-info: #f5ecd8; --chip-trade: #e1e9f3; --chip-order: #f3e2e2; --chip-duplicate: #e7e5f2; --chip-spam: #e8eae9; --chip-decline: #f1e7df;
+  --urgent: #b4321f; --urgent-soft: #fbe6e1; --harm: #b4321f; --warn: #b07d18;
   --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833;
-    --accent: #7fbf9f; --accent-soft: #23332c;
-    --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --out: #e09a9a;
-    --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-out: #3a2424;
+    --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833; --soft: #222a27;
+    --accent: #7fbf9f; --accent-soft: #23332c; --on-accent: #10201a;
+    --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --order: #e09a9a; --duplicate: #b3aee0; --spam: #a5adaa; --decline: #d9a888;
+    --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-order: #3a2424; --chip-duplicate: #2a283c; --chip-spam: #2a302e; --chip-decline: #3a2c22;
+    --urgent: #f08a76; --urgent-soft: #3d2420; --harm: #f08a76; --warn: #e0b45a;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833;
-  --accent: #7fbf9f; --accent-soft: #23332c;
-  --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --out: #e09a9a;
-  --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-out: #3a2424;
+  --bg: #141917; --panel: #1c2320; --ink: #e6ebe8; --muted: #9aa6a1; --line: #2e3833; --soft: #222a27;
+  --accent: #7fbf9f; --accent-soft: #23332c; --on-accent: #10201a;
+  --book: #7fbf9f; --info: #e0b45a; --trade: #8fb4e0; --order: #e09a9a; --duplicate: #b3aee0; --spam: #a5adaa; --decline: #d9a888;
+  --chip-book: #23332c; --chip-info: #3a3020; --chip-trade: #212c3a; --chip-order: #3a2424; --chip-duplicate: #2a283c; --chip-spam: #2a302e; --chip-decline: #3a2c22;
+  --urgent: #f08a76; --urgent-soft: #3d2420; --harm: #f08a76; --warn: #e0b45a;
   color-scheme: dark;
 }
+* { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; }
-.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
-h1 { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: .01em; margin: 0; line-height: 1; text-wrap: balance; }
-.sub { color: var(--muted); margin: 4px 0 0; max-width: 62ch; }
-.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: .01em; margin: 0; line-height: 1; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 64ch; }
+.hdr-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .badge { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: var(--panel); }
-.badge.syn { border-color: var(--info); color: var(--info); }
-.lanes { display: flex; flex-wrap: wrap; gap: 8px; }
-.lane-btn { font: 500 13px var(--body); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
-.lane-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.lane-btn .n { font-family: var(--mono); color: var(--muted); }
-.lane-btn:focus-visible, .row:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.console { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
-@media (max-width: 860px) { .console { grid-template-columns: minmax(0, 1fr); } }
+.badge.syn { border-color: var(--info); color: var(--info); font-weight: 500; }
+button { font: 600 13px var(--body); border-radius: 6px; padding: 8px 14px; min-height: 36px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+button.primary:hover { filter: brightness(1.08); }
+button.ghost { background: transparent; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, [tabindex]:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--soft); color: var(--muted); }
+button kbd { margin-left: 6px; background: transparent; color: inherit; border-color: currentColor; opacity: .7; }
+.tour-btn { border-color: var(--accent); color: var(--accent); }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 10px 14px; font: 600 15px var(--body); color: var(--muted); white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .n { font-family: var(--mono); font-size: 12px; font-weight: 500; margin-left: 6px; color: var(--muted); }
+[hidden] { display: none !important; }
+
+/* stats + toolbar */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.stat b { display: block; font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 12px; }
+.stat.urgent b { color: var(--urgent); }
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button { border: 0; border-radius: 0; min-height: 34px; font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip { font: 500 13px var(--body); padding: 5px 10px; min-height: 32px; border-radius: 999px; }
+.fchip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.fchip .n { font-family: var(--mono); color: var(--muted); margin-left: 4px; }
+.keys { color: var(--muted); font-size: 12px; }
+@media (max-width: 860px) { .keys { display: none; } }
+
+/* console */
+.console { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .console { grid-template-columns: minmax(0, 1fr); } }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
-.panel-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.panel-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
 .panel-h h2 { font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: .02em; text-transform: uppercase; margin: 0; }
 .panel-h .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.queue { list-style: none; margin: 0; padding: 0; max-height: 640px; overflow-y: auto; }
-.row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
-.row:last-child { border-bottom: 0; }
-.row[aria-selected="true"] { background: var(--accent-soft); }
-.score { font-family: var(--display); font-weight: 700; font-size: 26px; text-align: right; font-variant-numeric: tabular-nums; }
-.who { min-width: 0; }
-.who b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.who span { color: var(--muted); font-size: 12px; }
-.chip { font-family: var(--mono); font-size: 11px; padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
-.chip.book { background: var(--chip-book); color: var(--book); }
-.chip.info { background: var(--chip-info); color: var(--info); }
-.chip.trade { background: var(--chip-trade); color: var(--trade); }
-.chip.out, .chip.order { background: var(--chip-out); color: var(--out); }
+.queue { max-height: 74vh; overflow-y: auto; }
+@media (max-width: 900px) { .queue { max-height: 46vh; } }
+.group-h { position: sticky; top: 0; z-index: 1; background: var(--soft); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 5px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+.group-h.urgent { color: var(--urgent); }
+.qlist { list-style: none; margin: 0; padding: 0; }
+.row { padding: 9px 14px 9px 11px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; cursor: pointer; display: grid; gap: 2px; }
+.row:hover { background: var(--soft); }
+.row[aria-selected="true"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.row.is-urgent { border-left-color: var(--urgent); }
+.row.is-done { opacity: .62; }
+.row-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.row-top b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-msg { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-meta { display: flex; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.row-meta .late { color: var(--urgent); }
+.row-meta .sc { margin-left: auto; }
+.chip { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500; }
+.chip.book { background: var(--chip-book); color: var(--book); } .chip.info { background: var(--chip-info); color: var(--info); }
+.chip.trade { background: var(--chip-trade); color: var(--trade); } .chip.order { background: var(--chip-order); color: var(--order); }
+.chip.duplicate { background: var(--chip-duplicate); color: var(--duplicate); } .chip.spam { background: var(--chip-spam); color: var(--spam); }
+.chip.decline { background: var(--chip-decline); color: var(--decline); }
 .chip.done { background: var(--line); color: var(--muted); }
-.sla { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; margin-top: 3px; }
-.sla.late { color: var(--out); }
-.detail { padding: 14px; display: grid; gap: 16px; }
-.d-top { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: start; }
-.d-top h3 { font-family: var(--display); font-size: 26px; font-weight: 600; margin: 0; line-height: 1.1; }
-.d-top .id { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.props { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 16px; margin: 0; }
-.props div { min-width: 0; }
-.props dt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-.props dd { margin: 2px 0 0; overflow-wrap: anywhere; }
-.miss { color: var(--info); }
-.section-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
-.bars { display: grid; gap: 6px; }
-.bar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 36px; gap: 10px; align-items: center; font-size: 13px; }
-@media (max-width: 480px) { .bar { grid-template-columns: 110px minmax(0, 1fr) 32px; } }
-.track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.chip.urgent { background: var(--urgent-soft); color: var(--urgent); }
+.empty { color: var(--muted); padding: 14px; }
+
+/* card */
+.card { padding: 14px 16px 0; display: grid; gap: 14px; }
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: start; }
+.card-head h3 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0; line-height: 1.05; }
+.card-head .id { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.card-head .id .late { color: var(--urgent); }
+.sec-l { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 6px; }
+.came { display: grid; gap: 8px; }
+.quote { margin: 0; padding: 8px 12px; border-left: 3px solid var(--line); background: var(--soft); border-radius: 0 6px 6px 0; font-size: 14px; overflow-wrap: anywhere; }
+.quote.none { color: var(--muted); font-style: italic; }
+.rawf { display: flex; flex-wrap: wrap; gap: 6px; }
+.rawf span { font-size: 12px; border: 1px solid var(--line); border-radius: 4px; padding: 2px 7px; overflow-wrap: anywhere; }
+.rawf i { font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; margin-right: 4px; }
+.rawf .blank { color: var(--warn); border-style: dashed; }
+.suggest { border: 1.5px solid var(--accent); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+.suggest.screen { border-color: var(--line); border-style: dashed; }
+.s-action { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; }
+.why { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.why li::marker { color: var(--muted); }
+.reads { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 12px; font-size: 13px; margin: 0; }
+.reads dt { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; padding-top: 2px; }
+.reads dd { margin: 0; overflow-wrap: anywhere; }
+.reads .from { color: var(--muted); font-size: 12px; }
+.reads .from::before { content: "← "; }
+.reads .miss { color: var(--warn); }
+details.more summary { cursor: pointer; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+.bars { display: grid; gap: 5px; margin-top: 8px; }
+.bar { display: grid; grid-template-columns: 110px minmax(0, 1fr) 40px; gap: 10px; align-items: center; font-size: 12px; }
+.track { height: 7px; background: var(--line); border-radius: 4px; overflow: hidden; }
 .fill { display: block; height: 100%; background: var(--accent); }
-.bar .v { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
-.links { display: flex; flex-wrap: wrap; gap: 8px; }
-.obj { font-size: 13px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
-.obj i { font-style: normal; font-family: var(--mono); font-size: 11px; color: var(--muted); display: block; }
-.proposal { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; display: grid; gap: 10px; }
-.proposal p { margin: 0; }
-.proposal .why { color: var(--muted); font-size: 13px; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; }
-button { font: 600 13px var(--body); border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
-button:disabled { opacity: .5; cursor: default; }
-.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
-@media (max-width: 860px) { .lower { grid-template-columns: minmax(0, 1fr); } }
-.onto { padding: 14px; display: grid; gap: 12px; }
+.bar .v { font-family: var(--mono); text-align: right; }
+.draft { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 13.5px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.draft.none { color: var(--muted); font-style: italic; }
+textarea.draft-edit { width: 100%; min-height: 120px; font: 13.5px/1.5 var(--body); color: var(--ink); background: var(--panel); border: 1.5px solid var(--accent); border-radius: 6px; padding: 10px 12px; resize: vertical; }
+select { font: 14px var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-height: 36px; }
+.edit-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+.actbar { position: sticky; bottom: 0; background: var(--panel); border-top: 1px solid var(--line); margin: 0 -16px; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-radius: 0 0 8px 8px; }
+.actbar .note { margin-left: auto; color: var(--muted); font-size: 12px; }
+.done-banner { background: var(--soft); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.warn-line { color: var(--warn); font-size: 13px; }
+
+/* log */
+.log { list-style: none; margin: 0; padding: 8px 14px 12px; display: grid; gap: 4px; font-size: 13px; max-height: 220px; overflow-y: auto; }
+.log li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; }
+.log time { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+
+/* evaluation */
+.eval { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.hero { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hero .stat b { font-size: 40px; }
+.hero .stat .was { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 4px; }
+.two { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 14px; align-items: start; }
+@media (max-width: 960px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.pad { padding: 12px 14px; }
+.mx-wrap { overflow-x: auto; }
+table.mx { border-collapse: separate; border-spacing: 3px; font-size: 12px; margin: 0 auto; }
+table.mx th { font-family: var(--mono); font-weight: 500; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; padding: 4px; }
+table.mx th.rowh { text-align: right; white-space: nowrap; }
+table.mx th.colh { writing-mode: vertical-rl; transform: rotate(180deg); height: 92px; vertical-align: bottom; text-align: left; }
+table.mx td { width: 44px; height: 38px; text-align: center; font-family: var(--mono); font-size: 13px; border-radius: 4px; background: var(--soft); color: var(--muted); }
+table.mx td.diag { color: var(--ink); font-weight: 600; }
+table.mx td.harm { outline: 2px solid var(--harm); outline-offset: -2px; color: var(--ink); font-weight: 600; }
+table.mx td.soft { outline: 1.5px dashed var(--warn); outline-offset: -2px; color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); justify-content: center; margin-top: 8px; }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+.cats { display: grid; gap: 8px; }
+.cat { display: grid; grid-template-columns: 118px minmax(0, 1fr) 46px; gap: 8px; align-items: center; font-size: 12.5px; }
+.cat .tr { display: grid; gap: 2px; }
+.cat .t { height: 7px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.cat .t span { display: block; height: 100%; }
+.cat .t.v2 span { background: var(--accent); } .cat .t.v1 span { background: var(--muted); opacity: .55; }
+.cat .v { font-family: var(--mono); text-align: right; }
+.keyrow { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.keyrow i { display: inline-block; width: 18px; height: 6px; border-radius: 3px; vertical-align: 2px; margin-right: 5px; }
+table.misses { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.misses th, table.misses td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.misses th { font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; }
+.linkish { background: none; border: 0; padding: 0; min-height: 0; color: var(--accent); font: inherit; font-family: var(--mono); text-decoration: underline; cursor: pointer; }
+.method { font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+.method p { margin: 0; }
+
+/* how it works */
+.flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+@media (max-width: 900px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.step { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 4px; align-content: start; background: var(--panel); position: relative; }
+.step b { font-size: 13px; }
+.step span { font-size: 12px; color: var(--muted); }
+.step i { font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+.step.human { border-color: var(--accent); border-width: 1.5px; }
 .onto table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .onto th, .onto td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .onto th { font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
-.onto td.n { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.onto td.n { font-family: var(--mono); text-align: right; }
 .tbl { overflow-x: auto; }
-.log { list-style: none; margin: 0; padding: 0 14px 14px; display: grid; gap: 6px; font-size: 13px; }
-.log li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
-.log time { font-family: var(--mono); color: var(--muted); font-size: 12px; }
-.empty { color: var(--muted); padding: 14px; }
-.draft { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.funnel { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 12px 14px 4px; font-size: 13px; }
-.funnel .step { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-family: var(--mono); font-size: 12px; }
-.funnel .arrow { color: var(--muted); }
-footer { color: var(--muted); font-size: 12px; max-width: 80ch; }
-@media (prefers-reduced-motion: no-preference) { .fill { transition: width .4s ease; } }
+ol.rules { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
+
+footer { color: var(--muted); font-size: 12px; max-width: 90ch; }
+footer a { color: var(--muted); }
+
+/* toast + tour */
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--bg); border-radius: 8px; padding: 10px 14px; display: flex; gap: 12px; align-items: center; font-size: 13px; z-index: 50; box-shadow: 0 6px 24px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
+.toast button { background: transparent; color: var(--bg); border-color: var(--bg); min-height: 30px; padding: 4px 10px; }
+.tour-dim { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.tour-ring { position: fixed; z-index: 61; border-radius: 10px; box-shadow: 0 0 0 3px var(--accent), 0 0 0 9999px rgba(10, 16, 14, .55); pointer-events: none; transition: all .25s ease; }
+.tour-card { position: fixed; z-index: 62; width: min(360px, calc(100vw - 32px)); background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: 0 10px 40px rgba(0,0,0,.3); display: grid; gap: 10px; }
+.tour-card h4 { margin: 0; font-family: var(--display); font-size: 20px; font-weight: 600; }
+.tour-card p { margin: 0; font-size: 13.5px; }
+.tour-card .tnav { display: flex; gap: 8px; align-items: center; }
+.tour-card .tnav .pos { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-right: auto; }
+@media (prefers-reduced-motion: reduce) { .tour-ring { transition: none; } }
+@media (max-width: 640px) {
+  h1 { font-size: 28px; }
+  .sub { font-size: 13px; }
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .stat { padding: 8px; } .stat b { font-size: 22px; } .stat span { font-size: 10.5px; line-height: 1.25; display: block; }
+  .toolbar > * { min-width: 0; max-width: 100%; }
+  .chips { flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .fchip { white-space: nowrap; }
+  .hero .stat b { font-size: 28px; }
+  .card { padding: 12px 12px 0; } .actbar { margin: 0 -12px; padding: 10px 12px; }
+  .actbar .note { display: none; }
+}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <div>
       <h1>QBC Quote Triage</h1>
-      <p class="sub">Every incoming cabinet quote request gets scored, routed to a lane, and turned into a proposed action that a person approves. Built on Foundry's object, link and action model, so it ports straight in.</p>
+      <p class="sub">Every quote request arrives sorted: a suggested action, the reason, and a draft reply. A person approves each one. Nothing is sent until they do.</p>
     </div>
-    <div class="badges">
-      <span class="badge syn">Synthetic data</span>
-      <span class="badge" id="clock">Sample clock · Mon Nov 9, 10:00 ET</span>
+    <div class="hdr-right">
+      <span class="badge syn" title="Every name, phone, email and message is invented">Synthetic data</span>
+      <span class="badge">Clock · Mon Nov 9, 10:00 ET</span>
+      <button class="tour-btn" id="tour-start" type="button">▶ 60-second tour</button>
     </div>
   </header>
 
-  <div class="lanes" role="group" aria-label="Filter by lane" id="lanes"></div>
-
-  <div class="console">
-    <section class="panel" aria-label="Quote request queue">
-      <div class="panel-h"><h2>Queue</h2><span class="meta" id="qmeta"></span></div>
-      <ul class="queue" id="queue" role="listbox" aria-label="Quote requests"></ul>
-    </section>
-    <section class="panel" aria-live="polite" aria-label="Selected request">
-      <div class="panel-h"><h2>QuoteRequest</h2><span class="meta" id="dmeta"></span></div>
-      <div class="detail" id="detail"></div>
-    </section>
+  <div class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" id="tab-review" aria-controls="p-review" aria-selected="true">Review queue<span class="n" id="tab-n"></span></button>
+    <button class="tab" role="tab" id="tab-eval" aria-controls="p-eval" aria-selected="false">Evaluation<span class="n" id="tab-acc"></span></button>
+    <button class="tab" role="tab" id="tab-how" aria-controls="p-how" aria-selected="false">How it works</button>
   </div>
 
-  <div class="lower">
-    <section class="panel">
-      <div class="panel-h"><h2>Ontology</h2><span class="meta">objects · links · actions</span></div>
-      <div class="onto" id="onto"></div>
+  <!-- REVIEW -->
+  <section id="p-review" role="tabpanel" aria-labelledby="tab-review" class="eval">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Which requests">
+        <button type="button" id="view-inbox" aria-pressed="true">Monday inbox</button>
+        <button type="button" id="view-all" aria-pressed="false">All 161 (eval set)</button>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by suggested action"></div>
+      <span class="keys"><kbd>J</kbd>/<kbd>K</kbd> move · <kbd>A</kbd> approve · <kbd>E</kbd> edit · <kbd>S</kbd> send back</span>
+    </div>
+    <div class="console">
+      <section class="panel" aria-label="Queue">
+        <div class="panel-h"><h2>Queue</h2><span class="meta" id="qmeta"></span></div>
+        <div class="queue" id="queue"></div>
+      </section>
+      <section class="panel" aria-label="Selected request" id="card-panel">
+        <div class="card" id="card"></div>
+      </section>
+    </div>
+    <section class="panel" aria-label="Action log">
+      <div class="panel-h"><h2>Action log</h2><span class="meta" id="lmeta">writeback: status + log row</span></div>
+      <ul class="log" id="log"></ul>
     </section>
-    <section class="panel">
-      <div class="panel-h"><h2>Action log</h2><span class="meta" id="lmeta">0 approved</span></div>
-      <div class="funnel" id="funnel" aria-label="Funnel"></div>
-      <ul class="log" id="log"><li class="empty" style="display:block">No actions yet. Approve or send back a proposal to log it here.</li></ul>
-    </section>
-  </div>
+  </section>
+
+  <!-- EVALUATION -->
+  <section id="p-eval" role="tabpanel" aria-labelledby="tab-eval" class="eval" hidden></section>
+
+  <!-- HOW IT WORKS -->
+  <section id="p-how" role="tabpanel" aria-labelledby="tab-how" class="eval" hidden></section>
 
   <footer>
-    Rules come from verified QBC facts: supply only (no install), free in-home measure in Orange, Seminole, Osceola and Lake counties, callback within 24 hours, and order-taking (customer's own measurements) everywhere else. v2, Nov 12: four routing calls settled.
-    Lake County is inside the measure area, so Lake requests are scored like any other in-area request.
-    Every name and request here is SYNTHETIC. No real customer data is used.
-    Next step: the same object types, links and actions in Foundry (Ontology Manager, AIP Logic, Workshop) once Developer Tier access opens.
+    Every name, phone, email and request here is SYNTHETIC (phones 555-01xx, emails at example domains). Cities and ZIP codes are real places, used only to test the service-area rule. No real customer data is used, and nothing is ever sent.
+    Rules follow QBC's written policy: supply only (no install), free in-home measure in Orange, Seminole, Osceola and Lake counties, callback within 24 hours, order-taking everywhere else.
+    Modeled on Palantir Foundry's objects, links and actions; it does not run on Foundry. Built with Claude. See <a href="docs/ARCHITECTURE.md">ARCHITECTURE.md</a> and <a href="eval/REPORT.md">REPORT.md</a>.
   </footer>
 </div>
+<noscript><p style="padding:16px">Quote Triage needs JavaScript to run its rules in the browser.</p></noscript>
 
+<script src="src/places.js"></script>
+<script src="src/intake.js"></script>
+<script src="src/drafts.js"></script>
+<script src="src/triage.js"></script>
+<script src="eval/metrics.js"></script>
+<script src="eval/baseline-v1.js"></script>
+<script src="data/requests.js"></script>
 <script>
-// SYNTHETIC sample data, labeled as such in the UI.
-const NOW = new Date('2026-11-09T10:00:00-05:00');
-// Measure area (confirmed by Alex, Nov 11): Orange, Seminole, Osceola and Lake counties. Polk is out.
-// Everywhere else is order-taking: the customer supplies measurements and item codes (QBC decision, Sep 15).
-const COUNTY = {
-  'Orlando':'Orange','Winter Park':'Orange','Apopka':'Orange','Winter Garden':'Orange','Ocoee':'Orange','Windermere':'Orange',
-  'Sanford':'Seminole','Lake Mary':'Seminole','Oviedo':'Seminole','Altamonte Springs':'Seminole',
-  'Kissimmee':'Osceola','St. Cloud':'Osceola',
-  'Clermont':'Lake','Leesburg':'Lake','Mount Dora':'Lake','Groveland':'Lake'
-};
-const inArea = c => Boolean(COUNTY[c]);
-const GCS = [
-  { id: 'GC-01', name: 'Example GC A (synthetic)', kind: 'General contractor' },
-  { id: 'GC-02', name: 'Example Builder B (synthetic)', kind: 'Multifamily builder' }
-];
-const REQ = [
-  { id:'QR-1041', at:'2026-11-08T09:12', name:'Dana W.', type:'Homeowner', city:'Winter Park', scope:'Full kitchen', units:1, budget:'$12–18K', timeline:30, source:'Meta ad', contact:true, plans:false, note:'Gut renovation, wants shaker white.' },
-  { id:'QR-1042', at:'2026-11-09T07:40', name:'Marcus T.', type:'Investor (BYO installer)', city:'Kissimmee', scope:'Kitchen + 2 baths', units:4, budget:'$20–30K', timeline:21, source:'Referral partner', contact:true, plans:true, note:'4-unit rental refresh, has his own installer.' },
-  { id:'QR-1043', at:'2026-11-07T15:05', name:'Priya S.', type:'Homeowner', city:'Clermont', scope:'Full kitchen', units:1, budget:'$15–20K', timeline:60, source:'Google Business Profile', contact:true, plans:false, note:'Lake County address.' },
-  { id:'QR-1044', at:'2026-11-08T19:30', name:'Rob K.', type:'Homeowner', city:'Tampa', scope:'Bath vanity', units:1, budget:'Under $3K', timeline:14, source:'Website form', contact:true, plans:false, note:'Outside Central Florida service area.' },
-  { id:'QR-1045', at:'2026-11-09T08:55', name:'Example GC A precon desk', type:'General contractor', city:'Orlando', scope:'Student housing, unit kitchens', units:286, budget:'Bid', timeline:120, source:'Outbound reply', contact:true, plans:true, gc:'GC-01', project:'UCF-area student housing (synthetic)', note:'Asked for unit-type pricing by bid date.' },
-  { id:'QR-1046', at:'2026-11-08T11:20', name:'Lena M.', type:'Homeowner', city:'Lake Mary', scope:'Full kitchen', units:1, budget:'—', timeline:null, source:'Meta ad', contact:false, plans:false, note:'Form missing phone and timeline.' },
-  { id:'QR-1047', at:'2026-11-09T06:10', name:'Carlos D.', type:'Remodeler', city:'Sanford', scope:'Kitchen (client job)', units:1, budget:'$10–14K', timeline:30, source:'Referral partner', contact:true, plans:true, note:'Remodeler pricing for a client kitchen.' },
-  { id:'QR-1048', at:'2026-11-06T13:45', name:'Hannah P.', type:'Homeowner', city:'Oviedo', scope:'Laundry + mudroom', units:1, budget:'$4–6K', timeline:90, source:'Organic social', contact:true, plans:false, note:'Flexible on timing.' },
-  { id:'QR-1049', at:'2026-11-09T09:30', name:'Example Builder B', type:'Multifamily builder', city:'Orlando', scope:'Garden-style apartments', units:96, budget:'Bid', timeline:180, source:'Prequal form', contact:true, plans:false, gc:'GC-02', project:'Horizon West apartments (synthetic)', note:'Prequal approved; plans to follow.' },
-  { id:'QR-1050', at:'2026-11-08T16:00', name:'Tom & Jess R.', type:'Homeowner', city:'Winter Garden', scope:'Full kitchen', units:1, budget:'$20–25K', timeline:45, source:'Google Business Profile', contact:true, plans:false, note:'Saw finishes on GBP.' },
-  { id:'QR-1051', at:'2026-11-08T21:15', name:'Aisha N.', type:'Homeowner', city:'Leesburg', scope:'Bath vanities x2', units:1, budget:'$3–5K', timeline:30, source:'Meta ad', contact:true, plans:false, note:'Lake County address.' },
-  { id:'QR-1053', at:'2026-11-09T10:05', name:'Nina B.', type:'Homeowner', city:'Davenport', scope:'Full kitchen', units:1, budget:'$14–18K', timeline:45, source:'Meta ad', contact:true, plans:false, note:'Polk County, just outside the measure area.' },
-  { id:'QR-1052', at:'2026-11-09T05:50', name:'Greg F.', type:'Investor (BYO installer)', city:'Orlando', scope:'Kitchens, 3 condos', units:3, budget:'$18–24K', timeline:30, source:'Referral partner', contact:true, plans:true, note:'Turnover units, wants same line for all three.' }
-];
+(function () {
+'use strict';
+const { triage: T, metrics: M, baseline: B, drafts: DR, data: D } = window.QT;
+const NOW = Date.parse(D.clock);
+const LANES = T.LANES;
+const ORDER = ['book', 'info', 'trade', 'order', 'duplicate', 'spam', 'decline'];
+const REQ = new Map(D.requests.map(r => [r.id, r]));
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-// The triage step (the AIP Logic stand-in). Deterministic and explainable.
-function triage(r) {
-  const parts = [];
-  const missing = [];
-  const area = inArea(r.city) ? 'in' : 'out';
-  parts.push(['Service area', area === 'in' ? 30 : 10, 30]);
-  if (!r.contact) missing.push('a phone number');
-  if (r.timeline == null) missing.push('your timeline');
-  if (r.budget === '—') missing.push('a budget range');
-  const complete = 20 - missing.length * 7;
-  parts.push(['Completeness', Math.max(0, complete), 20]);
-  const t = r.timeline == null ? 0 : r.timeline <= 30 ? 15 : r.timeline <= 90 ? 10 : 5;
-  parts.push(['Timeline', t, 15]);
-  const v = r.units >= 10 ? 25 : r.units > 1 ? 18 : /Full kitchen|Kitchen/.test(r.scope) ? 14 : 8;
-  parts.push(['Job size', v, 25]);
-  const s = /Referral|Outbound|Prequal/.test(r.source) ? 10 : 6;
-  parts.push(['Source', s, 10]);
-  const score = parts.reduce((a, p) => a + p[1], 0);
-  // v2 rules (Alex, Nov 11): investors with 2-9 units go to the trade desk and get a call first;
-  // remodelers and GCs with a single job still get the measure; outside the measure area is order-taking.
-  const investor = /Investor/i.test(r.type) && r.units >= 2 && r.units <= 9;
-  let lane;
-  if (r.units >= 10 || investor) lane = 'trade';
-  else if (area === 'out') lane = 'order';
-  else if (missing.length) lane = 'info';
-  else lane = 'book';
-  if (lane === 'trade' && r.units >= 10 && !r.plans) missing.push('unit plans');
-  return { score, lane, parts, missing };
+const state = { tab: 'review', view: 'inbox', lane: 'all', selected: null, status: {}, edits: {}, patches: {}, mergedFrom: {}, log: [], editing: false, undo: null, evalEngine: 'v2' };
+const joinList = a => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
+let RES = [], BY = new Map();
+
+function compute() {
+  const reqs = D.requests.map(r => (state.patches[r.id] ? Object.assign({}, r, { form: Object.assign({}, r.form, state.patches[r.id]) }) : r));
+  RES = T.runAll(reqs);
+  BY = new Map(RES.map(x => [x.id, x]));
 }
+const laneOf = x => (state.edits[x.id] && state.edits[x.id].lane) || x.lane;
+const isOpen = x => !state.status[x.id];
+const ms = s => Date.parse(s + (s < '2026-11-01T02:00' ? ':00-04:00' : ':00-05:00')); // EDT until Nov 1
 
-function hi(r) {
-  if (/contractor|builder/i.test(r.type)) return 'Hi there';
-  return 'Hi ' + r.name.replace(/ [A-Z]\.$/, '');
+function when(s) {
+  const d = new Date(ms(s));
+  return d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
 }
-function joinList(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
-function askList(t) { return t.missing.filter(m => !/unit plans/.test(m)); }
-const LANE = {
-  book:  { label: 'Book measure', action: 'Book a free in-home measure', how: r => `Call ${r.name} back and offer three measure slots this week.`,
-           draft: r => `${hi(r)}, thanks for reaching out to Quality Built Cabinets about your ${r.scope.toLowerCase()}. We do a free in-home measure. Would any of these work this week: [slot 1], [slot 2] or [slot 3]?` },
-  info:  { label: 'Needs info', action: 'Request missing info', how: (r, t) => `Ask for: ${t.missing.join(', ')}. Hold the quote until it's back.`,
-           draft: (r, t) => `${hi(r)}, thanks for your request. To put your quote together, could you send ${joinList(askList(t))}? We'll get back to you within 24 hours.` },
-  trade: { label: 'Trade desk', action: 'Route to trade desk',
-           how: (r, t) => r.units < 10
-             ? `Investor with ${r.units} units: the QBC team calls today, before any measure, to talk volume and pricing. No answer: text and email the same day.`
-             : `Add to the bid list for ${r.project || 'this project'}. ${r.plans ? 'Price by unit type from the plans.' : 'Request unit plans and the bid date.'}`,
-           draft: r => r.units < 10
-             ? `${hi(r)}, thanks for reaching out to Quality Built Cabinets about your ${r.units} units. The QBC team will call you within 24 hours to talk through the units, then set up a free measure.`
-             : r.plans
-             ? `${hi(r)}, thanks for including Quality Built Cabinets. We'll price each unit type from the plans and send it ahead of your bid date.`
-             : `${hi(r)}, thanks for including Quality Built Cabinets. Could you send the unit plans and your bid date? We'll price each unit type and reply within 24 hours.` },
-  order: { label: 'Order-taking', action: 'Offer order-taking (their measurements)', how: r => `${r.city} is outside the measure area (Orange, Seminole, Osceola, Lake). Offer order-taking: they send measurements and item codes, we quote, the cabinets ship to them. The fit is theirs.`,
-           draft: r => `${hi(r)}, thanks for reaching out to Quality Built Cabinets. ${r.city} is outside the area where we measure in person, but we can still supply your cabinets: send us your measurements and the item codes you want, and we'll quote it and ship it to you. Since you'd be measuring, the sizes are yours to confirm.` }
-};
-
-// The one-sentence reason (in Foundry, AIP Logic writes this; here it is built from the same rule parts).
-function why(r, t) {
-  const bits = [];
-  bits.push(inArea(r.city) ? `${r.city} (${COUNTY[r.city]} County) is in the measure area` : `${r.city} is outside the measure area, so it's order-taking`);
-  bits.push(t.missing.length ? `missing ${t.missing.join(', ')}` : 'the request is complete');
-  if (r.timeline != null) bits.push(`wants it within ${r.timeline} days`);
-  bits.push(r.units >= 10 ? `${r.units} units makes it a trade job` : /Investor/i.test(r.type) && r.units > 1 ? `an investor with ${r.units} units gets a call first` : r.units > 1 ? `${r.units} units` : 'a single job');
-  bits.push(`came in through ${r.source}`);
-  return `Scored ${t.score}/100: ${bits.join('; ')}.`;
-}
-
-const state = { filter: 'all', selected: null, status: {}, log: [] };
-const rows = REQ.map(r => ({ r, t: triage(r) })).sort((a, b) => b.t.score - a.t.score);
-state.selected = rows[0].r.id;
-
-function hoursSince(at) { return Math.round((NOW - new Date(at + ':00-05:00')) / 36e5); }
-function slaText(r) {
-  const h = hoursSince(r.at);
-  const left = 24 - h;
+function sla(x) {
+  if (!REQ.get(x.id).inbox) return { text: 'received ' + new Date(ms(x.q.received)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' }), late: false };
+  const left = 24 - Math.round((NOW - ms(x.q.received)) / 36e5);
   return left >= 0 ? { text: `callback due in ${left}h`, late: false } : { text: `callback ${-left}h overdue`, late: true };
 }
-function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-
-function renderLanes() {
-  const counts = { all: rows.length, book: 0, info: 0, trade: 0, order: 0 };
-  rows.forEach(x => counts[x.t.lane]++);
-  const items = [['all', 'All'], ['book', LANE.book.label], ['info', LANE.info.label], ['trade', LANE.trade.label], ['order', LANE.order.label]];
-  document.getElementById('lanes').innerHTML = items.map(([k, l]) =>
-    `<button class="lane-btn" id="lane-${k}" data-lane="${k}" aria-pressed="${state.filter === k}">${l}<span class="n">${counts[k]}</span></button>`).join('');
-  document.querySelectorAll('.lane-btn').forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.lane; renderAll(); }));
+function visible() {
+  return RES.filter(x => (state.view === 'all' || REQ.get(x.id).inbox) && (state.lane === 'all' || laneOf(x) === state.lane));
 }
+function sortedOpen(list) { return list.filter(isOpen).sort(T.priority); }
 
+/* ---------- review: stats, chips, queue ---------- */
+function renderStats() {
+  const inView = RES.filter(x => state.view === 'all' || REQ.get(x.id).inbox);
+  const open = inView.filter(isOpen);
+  const urgent = open.filter(x => x.urgent).length;
+  const late = state.view === 'inbox' ? open.filter(x => LANES[laneOf(x)].group === 'lead' && sla(x).late).length : null;
+  const approved = Object.values(state.status).filter(s => s.verdict === 'approved').length;
+  $('stats').innerHTML = [
+    `<div class="stat"><b>${open.length}</b><span>open in this view</span></div>`,
+    `<div class="stat urgent"><b>${urgent}</b><span>urgent: a deadline or damage</span></div>`,
+    late == null ? `<div class="stat"><b>${open.filter(x => LANES[laneOf(x)].group === 'screen').length}</b><span>to screen out</span></div>`
+      : `<div class="stat${late ? ' urgent' : ''}"><b>${late}</b><span>leads past the 24h callback</span></div>`,
+    `<div class="stat"><b>${approved}</b><span>approved by you</span></div>`
+  ].join('');
+  $('tab-n').textContent = RES.filter(x => REQ.get(x.id).inbox && isOpen(x)).length + ' open';
+}
+function renderChips() {
+  const base = RES.filter(x => state.view === 'all' || REQ.get(x.id).inbox);
+  const count = k => base.filter(x => k === 'all' || laneOf(x) === k).length;
+  $('chips').innerHTML = ['all'].concat(ORDER).filter(k => k === 'all' || count(k)).map(k =>
+    `<button type="button" class="fchip" data-lane="${k}" aria-pressed="${state.lane === k}">${k === 'all' ? 'All' : LANES[k].label}<span class="n">${count(k)}</span></button>`).join('');
+  $('chips').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { state.lane = b.dataset.lane; renderReview(); }));
+}
+function rowHTML(x) {
+  const lane = laneOf(x);
+  const st = state.status[x.id];
+  const s = sla(x);
+  const msg = x.q.message ? `“${esc(x.q.message)}”` : '<i>no message</i>';
+  const place = x.q.place && x.q.place.known ? x.q.place.city : (x.q.form.location || 'no location');
+  const meta = lane === 'duplicate' && x.dup ? `merge → ${x.dup.of}` : LANES[lane].group === 'screen' ? '' : `<span class="${s.late && !st ? 'late' : ''}">${s.text}</span>`;
+  const chip = st ? `<span class="chip done">${st.verdict === 'approved' ? 'Approved' : 'Sent back'}</span>` : `<span class="chip ${lane}">${LANES[lane].label}</span>`;
+  return `<li class="row${x.urgent && !st ? ' is-urgent' : ''}${st ? ' is-done' : ''}" role="option" tabindex="-1" id="row-${x.id}" data-id="${x.id}" aria-selected="${state.selected === x.id}">
+    <div class="row-top"><b>${x.urgent && !st ? '<span class="chip urgent">Urgent</span> ' : ''}${esc(x.q.name)}</b>${chip}</div>
+    <div class="row-msg">${msg}</div>
+    <div class="row-meta"><span>${esc(place)}</span>${meta ? `<span>${meta}</span>` : ''}<span class="sc">${LANES[lane].group === 'lead' ? 'score ' + x.score : ''}</span></div>
+  </li>`;
+}
 function renderQueue() {
-  const list = rows.filter(x => state.filter === 'all' || x.t.lane === state.filter);
-  document.getElementById('qmeta').textContent = `${list.length} shown · sorted by score`;
-  document.getElementById('queue').innerHTML = list.map(({ r, t }) => {
-    const st = state.status[r.id];
-    const sla = slaText(r);
-    const chip = st ? `<span class="chip done">${st === 'approved' ? 'Approved' : 'Sent back'}</span>` : `<span class="chip ${t.lane}">${LANE[t.lane].label}</span>`;
-    return `<li class="row" role="option" tabindex="0" data-id="${r.id}" aria-selected="${state.selected === r.id}">
-      <span class="score">${t.score}</span>
-      <span class="who"><b>${esc(r.name)}</b><span>${esc(r.type)} · ${esc(r.city)} · ${esc(r.scope)}</span></span>
-      <span>${chip}<span class="sla ${sla.late && !st ? 'late' : ''}">${st ? r.id : sla.text}</span></span>
-    </li>`;
-  }).join('') || '<li class="empty">No requests in this lane.</li>';
-  document.querySelectorAll('.row').forEach(el => {
-    const pick = () => { state.selected = el.dataset.id; renderAll(); };
-    el.addEventListener('click', pick);
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
-  });
+  const list = visible();
+  const open = sortedOpen(list);
+  const groups = [
+    ['Urgent: deadline or damage', open.filter(x => x.urgent), 'urgent'],
+    ['Leads', open.filter(x => !x.urgent && LANES[laneOf(x)].group === 'lead'), ''],
+    ['Screen out: spam, repeats, not a fit', open.filter(x => LANES[laneOf(x)].group === 'screen'), ''],
+    ['Done', list.filter(x => !isOpen(x)).sort((a, b) => state.status[b.id].at - state.status[a.id].at), '']
+  ];
+  $('qmeta').textContent = `${open.length} open · ${list.length - open.length} done`;
+  const html = groups.filter(g => g[1].length).map(([t, xs, cls]) =>
+    `<div class="group-h ${cls}"><span>${t}</span><span>${xs.length}</span></div><ul class="qlist" role="listbox" aria-label="${t}">${xs.map(rowHTML).join('')}</ul>`).join('');
+  $('queue').innerHTML = html || '<p class="empty">Nothing in this lane.</p>';
+  $('queue').querySelectorAll('.row').forEach(el => el.addEventListener('click', () => select(el.dataset.id, { reveal: true })));
+}
+function ordered() {
+  const list = visible();
+  const open = sortedOpen(list);
+  return open.filter(x => x.urgent).concat(open.filter(x => !x.urgent && LANES[laneOf(x)].group === 'lead'), open.filter(x => LANES[laneOf(x)].group === 'screen'),
+    list.filter(x => !isOpen(x)).sort((a, b) => state.status[b.id].at - state.status[a.id].at));
+}
+// Scroll the queue panel, never the page, so the header and the card stay where they are.
+function keepInQueue(row) {
+  const c = $('queue');
+  const top = row.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop;
+  if (top - 30 < c.scrollTop) c.scrollTop = Math.max(0, top - 30);
+  else if (top + row.offsetHeight > c.scrollTop + c.clientHeight) c.scrollTop = top + row.offsetHeight - c.clientHeight;
+}
+function select(id, opts = {}) {
+  state.selected = id; state.editing = false;
+  renderQueue(); renderCard();
+  const row = $('row-' + id);
+  if (row) { keepInQueue(row); if (opts.focus !== false) row.focus({ preventScroll: true }); }
+  if (opts.reveal && window.matchMedia('(max-width: 900px)').matches) $('card-panel').scrollIntoView({ block: 'start' });
 }
 
-function renderDetail() {
-  const x = rows.find(y => y.r.id === state.selected);
-  const el = document.getElementById('detail');
+/* ---------- review: the card ---------- */
+const RAW_FIELDS = [['location', 'Location'], ['role', 'Role'], ['project', 'Project'], ['units', 'Units'], ['budget', 'Budget'], ['timeline', 'Timeline'], ['phone', 'Phone'], ['email', 'Email'], ['source', 'Source']];
+function draftFor(x, lane) {
+  if (lane === x.lane) return x.draft;
+  const ask = lane === 'info' ? x.missing : lane === 'trade' && x.q.units >= 10 && !x.q.plans ? ['plans'] : [];
+  return DR.write(Object.assign({}, x, { lane, ask }));
+}
+function renderCard() {
+  const el = $('card');
+  const x = BY.get(state.selected);
   if (!x) { el.innerHTML = '<p class="empty">Pick a request from the queue.</p>'; return; }
-  const { r, t } = x;
-  const sla = slaText(r);
-  const st = state.status[r.id];
-  const gc = r.gc ? GCS.find(g => g.id === r.gc) : null;
-  document.getElementById('dmeta').textContent = r.id;
-  const prop = (k, v, miss) => `<div><dt>${k}</dt><dd class="${miss ? 'miss' : ''}">${esc(v)}</dd></div>`;
+  const q = x.q, f = REQ.get(x.id).form; // what was typed, before any merge
+  const merged = state.patches[x.id] ? state.mergedFrom[x.id] : null;
+  const lane = laneOf(x);
+  const st = state.status[x.id];
+  const s = sla(x);
+  const edit = state.edits[x.id] || {};
+  const draft = edit.draft != null ? edit.draft : draftFor(x, lane);
+  const raw = RAW_FIELDS.map(([k, l]) => {
+    const v = String(f[k] || '').trim();
+    return `<span class="${v ? '' : 'blank'}"><i>${l}</i>${v ? esc(v) : 'blank'}</span>`;
+  }).join('');
+  const reads = q.read.map(r => `<dt>${esc(r.field)}</dt><dd class="${r.value === 'missing' || r.value === 'unknown' ? 'miss' : ''}">${esc(r.value)} <span class="from">${esc(r.from)}</span></dd>`).join('')
+    + (x.missing.length && LANES[lane].group === 'lead' ? `<dt>Missing</dt><dd class="miss">${esc(x.missing.join(', '))}</dd>` : '');
+  const screen = LANES[lane].group === 'screen';
+  const changed = edit.lane && edit.lane !== x.lane;
   el.innerHTML = `
-    <div class="d-top">
-      <div><h3>${esc(r.name)}</h3><span class="id">${r.id} · received ${r.at.replace('T', ' ')} · ${sla.text}</span></div>
-      <span class="chip ${t.lane}">${LANE[t.lane].label} · score ${t.score}/100</span>
+    <div class="card-head">
+      <div><h3>${esc(q.name)}</h3><div class="id">${x.id} · received ${when(q.received)} · <span class="${s.late && !st && !screen ? 'late' : ''}">${s.text}</span></div></div>
+      ${x.urgent ? '<span class="chip urgent">Urgent</span>' : ''}
     </div>
-    <dl class="props">
-      ${prop('Customer type', r.type)}${prop('City', r.city)}${prop('Scope', r.scope)}
-      ${prop('Units', r.units)}${prop('Budget', r.budget, r.budget === '—')}${prop('Timeline', r.timeline == null ? 'missing' : `${r.timeline} days`, r.timeline == null)}
-      ${prop('Source', r.source)}${prop('Contact info', r.contact ? 'on file' : 'missing', !r.contact)}${prop('Plans', r.plans ? 'received' : 'not yet')}
-    </dl>
+    ${st ? `<div class="done-banner"><b>${st.verdict === 'approved' ? 'Approved' : 'Sent back'}</b> at ${st.time}: ${esc(st.text)} <button type="button" class="ghost" id="reopen">Reopen</button></div>` : ''}
+    <div class="came">
+      <p class="sec-l">What came in · web form, as typed</p>
+      <blockquote class="quote${q.message ? '' : ' none'}">${q.message ? esc(q.message) : 'No message.'}</blockquote>
+      <div class="rawf">${raw}</div>
+      ${merged ? `<p class="warn-line" style="margin:0">Merged in from ${esc(merged.from)}: ${esc(merged.fields.join(', '))}. The suggestion below uses them.</p>` : ''}
+    </div>
+    <div class="suggest${screen ? ' screen' : ''}" id="suggest">
+      <p class="sec-l" style="margin:0">Suggested action${changed ? ' · changed by you' : ''}</p>
+      <div class="s-action"><span class="chip ${lane}">${LANES[lane].label}</span> ${esc(LANES[lane].action)}${lane === 'duplicate' && x.dup ? ` <button type="button" class="linkish" id="goto-orig">${x.dup.of}</button>` : ''}</div>
+      <ul class="why">${(st && st.reasons ? st.reasons : x.reasons).map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      ${changed ? `<p class="warn-line">The rules suggested ${LANES[x.lane].label}. Your change is logged as an override.</p>` : ''}
+      <details class="more"><summary>How the rules read this request${screen ? '' : ` · score ${x.score}/100`}</summary>
+        <dl class="reads" style="margin-top:8px">${reads}</dl>
+        <div class="bars"${screen ? ' hidden' : ''}>${x.parts.map(([k, v, max]) => `<div class="bar"><span>${k}</span><span class="track"><span class="fill" style="width:${(v / max) * 100}%"></span></span><span class="v">${v}/${max}</span></div>`).join('')}</div>
+      </details>
+    </div>
     <div>
-      <p class="section-label">Score breakdown</p>
-      <div class="bars">${t.parts.map(([k, v, max]) => `<div class="bar"><span>${k}</span><span class="track"><span class="fill" style="width:${(v / max) * 100}%"></span></span><span class="v">${v}/${max}</span></div>`).join('')}</div>
+      <p class="sec-l">Draft reply · sent only after approval</p>
+      ${state.editing ? `
+        <div class="edit-row" style="margin-bottom:8px"><label for="lane-sel">Action</label>
+          <select id="lane-sel">${ORDER.map(k => `<option value="${k}"${k === lane ? ' selected' : ''}>${LANES[k].label}: ${LANES[k].action}</option>`).join('')}</select></div>
+        <textarea class="draft-edit" id="draft-edit" aria-label="Draft reply">${esc(draft || '')}</textarea>`
+      : `<p class="draft${draft ? '' : ' none'}" id="draft">${draft ? esc(draft) : lane === 'spam' ? 'No reply. Spam is archived.' : lane === 'duplicate' ? `No reply. Merged into ${x.dup ? x.dup.of : 'the first request'}.` : 'No reply.'}</p>`}
     </div>
-    <div>
-      <p class="section-label">Linked objects</p>
-      <div class="links">
-        <span class="obj"><i>Customer</i>${esc(r.name)}</span>
-        ${r.project ? `<span class="obj"><i>Project</i>${esc(r.project)}</span>` : ''}
-        ${gc ? `<span class="obj"><i>${esc(gc.kind)}</i>${esc(gc.name)}</span>` : ''}
-        <span class="obj"><i>Channel</i>${esc(r.source)}</span>
-      </div>
-    </div>
-    <div class="proposal">
-      <p class="section-label" style="margin:0">Proposed action · needs approval</p>
-      <p><b>${LANE[t.lane].action}.</b> ${esc(LANE[t.lane].how(r, t))}</p>
-      <p class="why">${esc(why(r, t))} Note on file: ${esc(r.note)}</p>
-      <div>
-        <p class="section-label" style="margin:0 0 6px">Draft reply (sent only after approval)</p>
-        <div class="draft" id="draft">${esc(LANE[t.lane].draft(r, t))}</div>
-      </div>
-      <div class="actions">
-        <button class="primary" id="approve" ${st ? 'disabled' : ''}>Approve action</button>
-        <button id="reject" ${st ? 'disabled' : ''}>Send back</button>
-      </div>
+    <div class="actbar">
+      ${st ? '' : state.editing
+        ? `<button type="button" class="primary" id="save-approve">Save and approve<kbd>⌘↵</kbd></button><button type="button" id="cancel-edit">Cancel<kbd>Esc</kbd></button>`
+        : `<button type="button" class="primary" id="approve">Approve: ${esc(LANES[lane].action)}<kbd>A</kbd></button><button type="button" id="edit">Edit<kbd>E</kbd></button><button type="button" id="sendback">Send back<kbd>S</kbd></button>`}
+      <span class="note">${st ? '' : 'Nothing is sent until you approve.'}</span>
     </div>`;
-  if (!st) {
-    document.getElementById('approve').addEventListener('click', () => decide(r, t, 'approved'));
-    document.getElementById('reject').addEventListener('click', () => decide(r, t, 'sent back'));
+  const on = (id, fn) => { const b = $(id); if (b) b.addEventListener('click', fn); };
+  on('approve', () => approve(x));
+  on('edit', () => startEdit());
+  on('sendback', () => sendBack(x));
+  on('save-approve', () => saveAndApprove(x));
+  on('cancel-edit', () => { state.editing = false; renderCard(); });
+  on('reopen', () => { delete state.status[x.id]; logLine(`${x.id} reopened`); renderReview(); });
+  on('goto-orig', () => { if (x.dup) { if (!REQ.get(x.dup.of).inbox) setView('all'); select(x.dup.of); } });
+  const sel = $('lane-sel');
+  if (sel) sel.addEventListener('change', () => { $('draft-edit').value = draftFor(x, sel.value) || ''; });
+}
+function startEdit() { if (state.status[state.selected]) return; state.editing = true; renderCard(); const t = $('draft-edit'); if (t) t.focus(); }
+
+/* ---------- actions: every one is a person's decision, logged ---------- */
+function nowTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function logLine(text) { state.log.unshift({ time: nowTime(), text }); }
+function openSeq() { return ordered().filter(isOpen).map(x => x.id); }
+function nextIn(seq, id) { const i = seq.indexOf(id); return seq[i + 1] || seq[i - 1] || seq.find(s => s !== id) || id; }
+function approve(x, extra) {
+  const lane = laneOf(x);
+  const seq = openSeq();
+  const before = { status: state.status[x.id], patches: Object.assign({}, state.patches), mergedFrom: Object.assign({}, state.mergedFrom), edits: Object.assign({}, state.edits), log: state.log.slice(), selected: x.id };
+  let text = LANES[lane].action + (extra || '');
+  state.status[x.id] = { verdict: 'approved', time: nowTime(), at: Date.now(), text, reasons: x.reasons.slice() };
+  logLine(`${x.id} · ${text} · ${x.q.name}`);
+  // Writeback for a merge: the first request gets the details the repeat filled in, and is triaged again.
+  if (lane === 'duplicate' && x.dup && x.dup.fills.length) {
+    const orig = BY.get(x.dup.of);
+    const patch = {};
+    const map = { location: 'location', phone: 'phone', timeline: 'timeline', budget: 'budget' };
+    x.dup.fills.forEach(k => { patch[map[k]] = x.q.form[map[k]]; });
+    state.patches[x.dup.of] = Object.assign({}, state.patches[x.dup.of], patch);
+    state.mergedFrom[x.dup.of] = { from: x.id, fields: x.dup.fills.slice() };
+    const was = orig.lane;
+    compute();
+    const now = BY.get(x.dup.of).lane;
+    logLine(`${x.dup.of} · merged in ${joinList(x.dup.fills)} from ${x.id}${was !== now ? ` · re-triaged: ${LANES[was].label} → ${LANES[now].label}` : ''}`);
   }
+  state.undo = before;
+  toast(`Approved: ${LANES[lane].action} for ${x.q.name.replace(/\.$/, '')}.`);
+  state.selected = nextIn(seq, x.id);
+  state.editing = false;
+  renderReview();
+  const row = $('row-' + state.selected); if (row) { keepInQueue(row); row.focus({ preventScroll: true }); }
 }
-
-function decide(r, t, verdict) {
-  state.status[r.id] = verdict === 'approved' ? 'approved' : 'rejected';
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const text = `${r.id} · ${verdict === 'approved' ? LANE[t.lane].action : 'Sent back for review'} · ${r.name}`;
-  state.log.unshift({ time, text });
-  renderAll();
+function saveAndApprove(x) {
+  const lane = $('lane-sel').value;
+  const draft = $('draft-edit').value;
+  const changedLane = lane !== x.lane;
+  const changedDraft = draft !== (draftFor(x, lane) || '');
+  state.edits[x.id] = { lane, draft };
+  const bits = [];
+  if (changedLane) bits.push(`override: rules said ${LANES[x.lane].label}`);
+  if (changedDraft) bits.push('draft edited');
+  approve(x, bits.length ? ` (${bits.join(', ')})` : '');
 }
-
-function renderOnto() {
-  const n = k => rows.filter(x => x.t.lane === k).length;
-  const projects = REQ.filter(r => r.project).length;
-  document.getElementById('onto').innerHTML = `
-    <div class="tbl"><table>
-      <thead><tr><th>Object type</th><th>Key properties</th><th style="text-align:right">Count</th></tr></thead>
-      <tbody>
-        <tr><td>QuoteRequest</td><td>scope, units, budget, timeline, source, triage score, lane</td><td class="n">${REQ.length}</td></tr>
-        <tr><td>Customer</td><td>type (homeowner, investor, remodeler, GC), city, contact</td><td class="n">${REQ.length}</td></tr>
-        <tr><td>Project</td><td>name, unit count, bid date</td><td class="n">${projects}</td></tr>
-        <tr><td>TradePartner</td><td>kind, prequal status</td><td class="n">${GCS.length}</td></tr>
-      </tbody>
-    </table></div>
-    <div class="tbl"><table>
-      <thead><tr><th>Link type</th><th>Action type (human approves)</th></tr></thead>
-      <tbody>
-        <tr><td>QuoteRequest → Customer</td><td>Book measure (${n('book')} proposed)</td></tr>
-        <tr><td>QuoteRequest → Project</td><td>Request info (${n('info')} proposed)</td></tr>
-        <tr><td>Project → TradePartner</td><td>Route to trade desk (${n('trade')} proposed)</td></tr>
-        <tr><td>QuoteRequest → Channel</td><td>Offer order-taking (${n('order')} proposed)</td></tr>
-      </tbody>
-    </table></div>`;
+function sendBack(x) {
+  const seq = openSeq();
+  const before = { status: state.status[x.id], patches: Object.assign({}, state.patches), edits: Object.assign({}, state.edits), log: state.log.slice(), selected: x.id };
+  state.status[x.id] = { verdict: 'sent back', time: nowTime(), at: Date.now(), text: 'sent back to the QBC team to handle by hand' };
+  logLine(`${x.id} · Sent back for a person to handle · ${x.q.name}`);
+  state.undo = before;
+  toast(`Sent back: ${x.q.name.replace(/\.$/, '')}.`);
+  state.selected = nextIn(seq, x.id);
+  renderReview();
 }
+function undo() {
+  const u = state.undo; if (!u) return;
+  const id = u.selected;
+  if (u.status) state.status[id] = u.status; else delete state.status[id];
+  state.patches = u.patches; state.mergedFrom = u.mergedFrom || state.mergedFrom; state.edits = u.edits; state.log = u.log; state.undo = null;
+  compute(); state.selected = id; renderReview(); hideToast();
+}
+let toastTimer = null;
+function toast(msg) {
+  hideToast();
+  const t = document.createElement('div');
+  t.className = 'toast'; t.id = 'toast'; t.setAttribute('role', 'status');
+  t.innerHTML = `<span>${esc(msg)}</span><button type="button" id="undo">Undo</button>`;
+  document.body.appendChild(t);
+  $('undo').addEventListener('click', undo);
+  toastTimer = setTimeout(hideToast, 6000);
+}
+function hideToast() { clearTimeout(toastTimer); const t = $('toast'); if (t) t.remove(); }
 
 function renderLog() {
-  const el = document.getElementById('log');
-  const approved = Object.values(state.status).filter(s => s === 'approved').length;
-  document.getElementById('lmeta').textContent = `${approved} approved · ${state.log.length} logged`;
-  const toMeasure = rows.filter(x => x.t.lane === 'book').length;
-  const measuresOk = rows.filter(x => x.t.lane === 'book' && state.status[x.r.id] === 'approved').length;
-  const tradeOk = rows.filter(x => x.t.lane === 'trade' && state.status[x.r.id] === 'approved').length;
-  document.getElementById('funnel').innerHTML =
-    `<span class="step">${rows.length} requests</span><span class="arrow">→</span>` +
-    `<span class="step">${toMeasure} ready to measure</span><span class="arrow">→</span>` +
-    `<span class="step">${measuresOk} measures booked</span><span class="arrow">·</span>` +
-    `<span class="step">${tradeOk} trade bids</span>`;
-  el.innerHTML = state.log.length ? state.log.map(e => `<li><time>${esc(e.time)}</time><span>${esc(e.text)}</span></li>`).join('')
-    : '<li class="empty" style="display:block">No actions yet. Approve or send back a proposal to log it here.</li>';
+  $('log').innerHTML = state.log.length ? state.log.map(e => `<li><time>${esc(e.time)}</time><span>${esc(e.text)}</span></li>`).join('')
+    : '<li class="empty" style="display:block;padding:4px 0">No actions yet. Each approval writes a status change and a row here.</li>';
+}
+function renderReview() { renderStats(); renderChips(); renderQueue(); renderCard(); renderLog(); }
+function setView(v) {
+  state.view = v; state.lane = 'all';
+  $('view-inbox').setAttribute('aria-pressed', v === 'inbox'); $('view-all').setAttribute('aria-pressed', v === 'all');
+  if (!visible().some(x => x.id === state.selected)) state.selected = (ordered()[0] || {}).id;
+  renderReview();
 }
 
-function renderAll() { renderLanes(); renderQueue(); renderDetail(); renderOnto(); renderLog(); }
-renderAll();
+/* ---------- evaluation (computed live from the same code) ---------- */
+let EV = null;
+function evaluate() {
+  if (EV) return EV;
+  const v2 = M.score(D.requests, T.runAll(D.requests));
+  const v1 = M.score(D.requests, B.runAll(D.requests));
+  EV = { v2, v1 };
+  return EV;
+}
+function renderEval() {
+  const { v2, v1 } = evaluate();
+  const m = state.evalEngine === 'v2' ? v2 : v1;
+  const cats = Object.keys(v2.categories).sort((a, b) => v2.categories[b].n - v2.categories[a].n);
+  const max = Math.max(...ORDER.flatMap(t => ORDER.map(p => (t === p ? 0 : m.confusion[t][p]))), 1);
+  const cell = (t, p) => {
+    const v = m.confusion[t][p];
+    if (t === p) return `<td class="diag" style="background:color-mix(in srgb, var(--accent) ${v ? 18 + Math.min(60, v * 1.5) : 0}%, var(--soft))" title="${LANES[t].label}: ${v} right">${v || '·'}</td>`;
+    if (!v) return '<td>·</td>';
+    const sev = M.severity(t, p);
+    return `<td class="${sev.harmful ? 'harm' : 'soft'}" style="background:color-mix(in srgb, var(--${sev.harmful ? 'harm' : 'warn'}) ${12 + (v / max) * 40}%, var(--soft))" title="${v}: labeled ${LANES[t].label}, proposed ${LANES[p].label}. ${sev.harmful ? 'Harmful' : 'Recoverable'}: ${sev.why}">${v}</td>`;
+  };
+  $('tab-acc').textContent = v2.lanePct + '%';
+  $('p-eval').innerHTML = `
+    <div class="hero">
+      <div class="stat"><b>${D.requests.length}</b><span>SYNTHETIC requests, each labeled from QBC's written routing policy</span></div>
+      <div class="stat"><b>${v2.lanePct}%</b><span>routed to the labeled action (${v2.laneOk}/${v2.n})</span><span class="was">v1: ${v1.lanePct}%</span></div>
+      <div class="stat"><b>${v2.splits.holdout.pct}%</b><span>on ${v2.splits.holdout.n} held-out requests, frozen before any fix</span><span class="was">v1: ${v1.splits.holdout.pct}%</span></div>
+      <div class="stat"><b>${v2.harmful}</b><span>harmful misses: a lead dropped or a wrong promise</span><span class="was">v1: ${v1.harmful}</span></div>
+    </div>
+    <div class="two">
+      <section class="panel">
+        <div class="panel-h"><h2>Confusion matrix</h2>
+          <div class="seg" role="group" aria-label="Which rules"><button type="button" data-eng="v2" aria-pressed="${state.evalEngine === 'v2'}">v2 (now)</button><button type="button" data-eng="v1" aria-pressed="${state.evalEngine === 'v1'}">v1 (before)</button></div>
+        </div>
+        <div class="pad">
+          <p class="sec-l" style="text-align:center">Rows: the labeled action · columns: what the rules proposed</p>
+          <div class="mx-wrap"><table class="mx" aria-label="Confusion matrix">
+            <thead><tr><th></th>${ORDER.map(p => `<th class="colh" scope="col">${LANES[p].label}</th>`).join('')}</tr></thead>
+            <tbody>${ORDER.map(t => `<tr><th class="rowh" scope="row">${LANES[t].label}</th>${ORDER.map(p => cell(t, p)).join('')}</tr>`).join('')}</tbody>
+          </table></div>
+          <div class="legend"><span><i style="background:color-mix(in srgb, var(--accent) 50%, var(--soft))"></i>right</span><span><i style="outline:2px solid var(--harm);outline-offset:-2px;background:var(--soft)"></i>harmful miss</span><span><i style="outline:1.5px dashed var(--warn);outline-offset:-2px;background:var(--soft)"></i>recoverable miss</span></div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-h"><h2>By category</h2><span class="meta">v2 vs v1</span></div>
+        <div class="pad">
+          <div class="keyrow"><span><i style="background:var(--accent)"></i>v2</span><span><i style="background:var(--muted);opacity:.55"></i>v1</span></div>
+          <div class="cats">${cats.map(k => `<div class="cat"><span>${k} <span style="color:var(--muted);font-family:var(--mono);font-size:11px">${v2.categories[k].n}</span></span>
+            <span class="tr"><span class="t v2"><span style="width:${v2.categories[k].pct}%"></span></span><span class="t v1"><span style="width:${v1.categories[k].pct}%"></span></span></span>
+            <span class="v">${Math.round(v2.categories[k].pct)}%</span></div>`).join('')}</div>
+        </div>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="panel-h"><h2>What v2 still gets wrong</h2><span class="meta">${v2.misses.length} of ${v2.n} · ${v2.harmful ? v2.harmful + ' harmful' : 'none harmful'}</span></div>
+      <div class="tbl"><table class="misses">
+        <thead><tr><th>Request</th><th>Split</th><th>Miss</th><th>What it would cost</th></tr></thead>
+        <tbody>${v2.misses.map(mi => `<tr><td><button type="button" class="linkish" data-open="${mi.id}">${mi.id}</button> <span style="color:var(--muted)">${esc(mi.category)}</span></td><td>${mi.split}</td><td>${esc(mi.what)}</td><td>${mi.harmful ? '<b style="color:var(--harm)">harmful</b>: ' : ''}${esc(mi.why)}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>
+    <section class="panel"><div class="pad method">
+      <p><b>How this is measured.</b> ${D.requests.length} requests from <code>scripts/generate.js</code>: kitchens and baths, sizes, timelines, out-of-area towns, spam, incomplete forms, duplicates, urgent cases, investors and tricky negatives (a real lead with a link, a prompt-injection line). Each label is the action QBC's written policy requires, written per scenario; the generator imports none of the triage code.</p>
+      <p><b>Holdout.</b> ${v2.splits.holdout.n} requests use separate phrasing and were committed before any fix. v2 scores ${v2.splits.dev.pct}% on the ${v2.splits.dev.n} it was fixed against and ${v2.splits.holdout.pct}% on the holdout. The gap is the honest number.</p>
+      <p><b>Limits.</b> The same author wrote the data, the labels and the rules, so this is a regression suite for the policy, not real-world accuracy. Full report: <a href="eval/REPORT.md">eval/REPORT.md</a>.</p>
+      <p><b>Other checks.</b> Drafts ask for exactly what is missing: v2 ${v2.ask.pct}% (v1 ${v1.ask.pct}%). Urgent flag precision/recall ${v2.urgent.precision}% / ${v2.urgent.recall}%. Duplicates merged into the right request: ${v2.dup.pct}%.</p>
+    </div></section>`;
+  $('p-eval').querySelectorAll('[data-eng]').forEach(b => b.addEventListener('click', () => { state.evalEngine = b.dataset.eng; renderEval(); }));
+  $('p-eval').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => { setTab('review'); setView('all'); select(b.dataset.open, { reveal: true }); }));
+}
+
+/* ---------- how it works ---------- */
+function renderHow() {
+  const n = k => RES.filter(x => x.lane === k).length;
+  const people = new Set(D.requests.map(r => (r.form.email || r.form.phone || r.form.name).toLowerCase())).size;
+  $('p-how').innerHTML = `
+    <section class="panel"><div class="panel-h"><h2>The pipeline</h2><span class="meta">rules decide · the AI slot only writes · a person approves</span></div>
+      <div class="pad flow">
+        <div class="step"><i>Dataset</i><b>Raw submission</b><span>The web form exactly as typed, message included.</span></div>
+        <div class="step"><i>Function</i><b>Intake</b><span>Reads place, units, customer type and signals. Records where each value came from.</span></div>
+        <div class="step"><i>Function</i><b>Rules</b><span>Lane, score, what to ask, urgency, duplicate check. Tested line by line.</span></div>
+        <div class="step"><i>AI slot</i><b>Draft reply</b><span>Templates today. Sees the decision, never the message, so it cannot change the lane.</span></div>
+        <div class="step human"><i>Action</i><b>A person approves</b><span>Approve, edit, change the action, or send back.</span></div>
+        <div class="step"><i>Writeback</i><b>Status + log</b><span>Every decision writes a status and a log row. Merges update the first request.</span></div>
+      </div></section>
+    <div class="two">
+      <section class="panel onto"><div class="panel-h"><h2>Ontology</h2><span class="meta">objects · links · actions</span></div>
+        <div class="pad tbl"><table>
+          <thead><tr><th>Object type</th><th>Key properties</th><th style="text-align:right">Count</th></tr></thead>
+          <tbody>
+            <tr><td>QuoteRequest</td><td>scope, units, budget, timeline, place, score, lane, status</td><td class="n">${D.requests.length}</td></tr>
+            <tr><td>Customer</td><td>type (homeowner, investor, remodeler, builder), contact</td><td class="n">${people}</td></tr>
+            <tr><td>Place</td><td>city, county, in measure area</td><td class="n">${Object.keys(window.QT.places.COUNTY).length}</td></tr>
+            <tr><td>Channel</td><td>Meta ad, Google Business Profile, website form, referral…</td><td class="n">${new Set(D.requests.map(r => r.form.source)).size}</td></tr>
+            <tr><td>Project, TradePartner</td><td>bid date, unit count; kind, prequal status</td><td class="n">trade jobs</td></tr>
+          </tbody></table>
+          <table style="margin-top:12px">
+          <thead><tr><th>Link type</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>QuoteRequest → Customer</td><td>who asked (many to one)</td></tr>
+            <tr><td>QuoteRequest → Place</td><td>where the job is; drives the measure-area rule</td></tr>
+            <tr><td>QuoteRequest → QuoteRequest</td><td><b>duplicate of</b>: set when a merge is approved</td></tr>
+            <tr><td>QuoteRequest → Channel</td><td>where it came from</td></tr>
+            <tr><td>QuoteRequest → Project → TradePartner</td><td>for trade jobs</td></tr>
+          </tbody></table></div></section>
+      <section class="panel onto"><div class="panel-h"><h2>Action types</h2><span class="meta">each needs a person</span></div>
+        <div class="pad tbl"><table>
+          <thead><tr><th>Action</th><th>Writes</th><th style="text-align:right">Proposed</th></tr></thead>
+          <tbody>${ORDER.map(k => `<tr><td><span class="chip ${k}">${LANES[k].label}</span> ${esc(LANES[k].action)}</td><td>${k === 'duplicate' ? 'status merged, duplicate-of link, fills the first request' : k === 'spam' ? 'status archived' : 'status, reply queued'}</td><td class="n">${n(k)}</td></tr>`).join('')}
+          <tr><td>Send back</td><td>status needs a person; no reply</td><td class="n">–</td></tr></tbody></table>
+          <p class="sec-l" style="margin-top:14px">Lane rules, checked in order</p>
+          <ol class="rules">
+            <li><b>Spam</b> if vendor-pitch signals add up to 3 (a pitch phrase is 2, a link 1), so one stray word in a real lead is never enough.</li>
+            <li><b>Duplicate</b> if the same phone or email asked about the same job in the last 14 days.</li>
+            <li><b>Not a fit</b> if it asks only for installation or countertops (QBC supplies cabinets and does not install).</li>
+            <li><b>Trade desk</b> if 10+ units, or an investor with 2–9 units.</li>
+            <li><b>Order-taking</b> if outside Orange, Seminole, Osceola and Lake counties.</li>
+            <li><b>Needs info</b> if the place can't be pinned down, or phone, timeline or budget is missing.</li>
+            <li><b>Book measure</b> otherwise.</li>
+          </ol></div></section>
+    </div>`;
+}
+
+/* ---------- tabs, keys ---------- */
+function setTab(t) {
+  state.tab = t;
+  ['review', 'eval', 'how'].forEach(k => { $('tab-' + k).setAttribute('aria-selected', k === t); $('p-' + k).hidden = k !== t; });
+  if (t === 'eval') renderEval();
+  if (t === 'how') renderHow();
+}
+['review', 'eval', 'how'].forEach(k => $('tab-' + k).addEventListener('click', () => setTab(k)));
+$('view-inbox').addEventListener('click', () => setView('inbox'));
+$('view-all').addEventListener('click', () => setView('all'));
+
+document.addEventListener('keydown', e => {
+  if (tour.active) { if (e.key === 'Escape') endTour(); else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); tourNext(); } return; }
+  const typing = /^(TEXTAREA|SELECT|INPUT)$/.test(e.target.tagName);
+  if (state.editing && (e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); saveAndApprove(BY.get(state.selected)); return; }
+  if (state.editing && e.key === 'Escape') { state.editing = false; renderCard(); return; }
+  if (typing || state.tab !== 'review' || e.metaKey || e.ctrlKey || e.altKey) return;
+  const list = ordered();
+  const i = list.findIndex(x => x.id === state.selected);
+  const k = e.key.toLowerCase();
+  if (k === 'j' || e.key === 'ArrowDown') { e.preventDefault(); if (list[i + 1]) select(list[i + 1].id); }
+  else if (k === 'k' || e.key === 'ArrowUp') { e.preventDefault(); if (i > 0) select(list[i - 1].id); }
+  else if (k === 'a' && !state.status[state.selected]) { e.preventDefault(); approve(BY.get(state.selected)); }
+  else if (k === 'e') { e.preventDefault(); startEdit(); }
+  else if (k === 's' && !state.status[state.selected]) { e.preventDefault(); sendBack(BY.get(state.selected)); }
+  else if (k === 'z' && state.undo) { e.preventDefault(); undo(); }
+});
+
+/* ---------- the 60-second tour ---------- */
+const tour = { active: false, i: 0 };
+const STEPS = [
+  { title: 'Monday, 10:00', text: 'The weekend’s quote requests, already sorted: urgent ones on top, then leads by score, then junk to screen out. All 22 are SYNTHETIC.', target: () => $('queue').closest('.panel'), before: () => { setTab('review'); setView('inbox'); select(firstId()); } },
+  { title: 'What came in', text: 'Kofi picked “Homeowner” and typed only a ZIP. His message is the real story.', target: () => document.querySelector('.came'), before: () => select('QR-1062', { focus: false }) },
+  { title: 'The suggestion, and why', text: 'The rules read Kissimmee (Osceola County) from the ZIP and “two rental houses” from the message, so he is an investor with 2 units: the trade desk calls first. Rules pick the action; the draft only words it.', target: () => $('suggest') },
+  { title: 'One click, by a person', text: 'Nothing is sent until someone approves. Approve, edit the draft, change the action or send it back. Press Next to approve this one; the next request opens on its own.', target: () => $('approve') && $('approve').closest('.actbar') },
+  { title: 'Not every request is a lead', text: 'Lena wrote again with the phone number she forgot. Approving the merge fills in her first request, which then re-routes from Needs info to Book measure. Watch the log.', target: () => document.querySelector('.card'), before: () => { const x = BY.get('QR-1062'); if (x && !state.status[x.id]) approve(x); hideToast(); select('QR-1061', { focus: false }); } },
+  { title: 'Is it right?', text: () => { const { v1, v2 } = evaluate(); return `The same code runs on ${v2.n} labeled SYNTHETIC requests, live in your browser. v1 matched ${Math.round(v1.lanePct)}% with ${v1.harmful} harmful misses; v2 matches ${Math.round(v2.lanePct)}% (${Math.round(v2.splits.holdout.pct)}% on the held-out set) with ${v2.harmful || 'none'}.`; }, target: () => document.querySelector('#p-eval .hero'), before: () => { const x = BY.get('QR-1061'); if (x && !state.status[x.id]) approve(x); hideToast(); setTab('eval'); } }
+];
+function firstId() { const o = ordered(); return o.length ? o[0].id : null; }
+let ring, card;
+function startTour() {
+  tour.active = true; tour.i = 0;
+  ring = document.createElement('div'); ring.className = 'tour-ring';
+  card = document.createElement('div'); card.className = 'tour-card'; card.setAttribute('role', 'dialog'); card.setAttribute('aria-live', 'polite');
+  document.body.append(ring, card);
+  showStep();
+}
+function showStep() {
+  const s = STEPS[tour.i];
+  if (s.before) s.before();
+  const el = s.target();
+  card.innerHTML = `<h4>${s.title}</h4><p>${typeof s.text === 'function' ? s.text() : s.text}</p><div class="tnav"><span class="pos">${tour.i + 1} / ${STEPS.length}</span><button type="button" class="ghost" id="t-skip">${tour.i === STEPS.length - 1 ? 'Close' : 'Skip'}</button><button type="button" class="primary" id="t-next">${tour.i === STEPS.length - 1 ? 'Done' : 'Next'}</button></div>`;
+  $('t-next').addEventListener('click', tourNext);
+  $('t-skip').addEventListener('click', endTour);
+  if (el) el.scrollIntoView({ block: 'center' });
+  requestAnimationFrame(() => place(el));
+  $('t-next').focus({ preventScroll: true });
+}
+function place(el) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (!el) { ring.style.cssText = 'top:50%;left:50%;width:0;height:0'; card.style.left = (vw - card.offsetWidth) / 2 + 'px'; card.style.top = vh / 3 + 'px'; return; }
+  const r = el.getBoundingClientRect();
+  const top = Math.max(r.top, 8), bottom = Math.min(r.bottom, vh - 8);
+  ring.style.top = top - 6 + 'px'; ring.style.left = r.left - 6 + 'px'; ring.style.width = r.width + 12 + 'px'; ring.style.height = bottom - top + 12 + 'px';
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let x, y;
+  if (r.right + 16 + cw < vw) { x = r.right + 16; y = Math.min(Math.max(8, top), vh - ch - 8); }
+  else if (r.left - 16 - cw > 0) { x = r.left - 16 - cw; y = Math.min(Math.max(8, top), vh - ch - 8); }
+  else { x = Math.min(Math.max(8, r.left), vw - cw - 8); y = bottom + 16 + ch < vh ? bottom + 16 : Math.max(8, top - ch - 16); }
+  card.style.left = x + 'px'; card.style.top = y + 'px';
+}
+function tourNext() { if (tour.i >= STEPS.length - 1) return endTour(); tour.i++; showStep(); }
+function endTour() { tour.active = false; if (ring) ring.remove(); if (card) card.remove(); }
+window.addEventListener('resize', () => { if (tour.active) place(STEPS[tour.i].target()); });
+$('tour-start').addEventListener('click', startTour);
+
+/* ---------- boot ---------- */
+compute();
+state.selected = firstId();
+renderReview();
+const h = location.hash.slice(1);
+if (h === 'eval' || h === 'how') setTab(h);
+else if (h === 'tour') startTour();
+else if (/^QR-\d+$/.test(h) && BY.has(h)) { if (!REQ.get(h).inbox) setView('all'); select(h, { focus: false }); }
+$('tab-acc').textContent = evaluate().v2.lanePct + '%';
+window.QT.app = { state, approve: id => approve(BY.get(id)), select, setTab, setView, startTour };
+})();
 </script>
 </body>
 </html>

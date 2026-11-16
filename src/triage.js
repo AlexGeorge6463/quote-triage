@@ -33,7 +33,8 @@
     decline: { label: 'Not a fit', action: 'Decline politely', group: 'screen' }
   };
   const ASK_ORDER = ['location', 'phone', 'timeline', 'budget'];
-  const ms = s => Date.parse(s + ':00-05:00');
+  const ms = s => Date.parse(s + (s < '2026-11-01T02:00' ? ':00-04:00' : ':00-05:00')); // ET: EDT until Nov 1
+  const joinList = a => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
 
   function score(q) {
     const parts = [];
@@ -101,8 +102,9 @@
     const s = q.signals;
     if (d.lane === 'spam') { out.push(`Spam signals: ${s.spam.reasons.join(', ')}.`); return out; }
     if (d.lane === 'duplicate') {
-      out.push(`Same ${d.dup.by} as ${d.dup.of}, ${d.dup.days < 1 ? 'the same day' : Math.round(d.dup.days) + (Math.round(d.dup.days) === 1 ? ' day' : ' days') + ' earlier'}.`);
-      out.push(d.dup.fills.length ? `Merging adds the ${d.dup.fills.join(' and ')} that ${d.dup.of} was missing.` : 'Nothing new to add; no reply needed.');
+      const h = Math.round(d.dup.days * 24), dd = Math.round(d.dup.days);
+      out.push(`Same ${d.dup.by} as ${d.dup.of}, sent ${h < 36 ? h + (h === 1 ? ' hour' : ' hours') : dd + ' days'} earlier.`);
+      out.push(d.dup.fills.length ? `Merging adds the ${joinList(d.dup.fills)} that ${d.dup.of} was missing.` : 'Nothing new to add; no reply needed.');
       return out;
     }
     if (d.lane === 'decline') { out.push(`Asks for ${s.notAFit}. QBC supplies cabinets and does not install, so there is nothing to quote.`); return out; }
