@@ -1,10 +1,10 @@
-# Quote Triage
+# Lead Sorter
 
-An ontology-first intake workflow for a small cabinet business. Each incoming quote request is scored, routed to one of four lanes and turned into a proposed action with a one-sentence reason and a draft reply. Nothing happens until a person approves it.
+Lead Sorter reads each new quote request for a small cabinet business and picks the next step: book a measure, ask for missing info, have the team call a builder first, or take the order on the customer's own measurements. It gives a one-sentence reason and a draft reply, and nothing happens until a person approves it.
 
 It is a standalone prototype: one HTML file, no build step, no server. It is modeled on Palantir Foundry's ontology (object types, link types and action types) so it can be ported into Foundry later.
 
-> **All data is SYNTHETIC.** Every name, request and trade partner in this repo is invented. The cities are real places, used only to exercise the service-area rule. No real customer data and no data from any employer is used.
+> **All data is SYNTHETIC: made up on purpose, because we don't publish our customers' information.** Every name, request and trade partner in this repo is invented; the cities are real places, used only to test the service-area rule. The rules come from how QBC sorts its quote requests every day. No real customer data and no data from any employer is used.
 
 ![The queue sorted by score, with one request open](screenshots/overview.png)
 
