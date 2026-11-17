@@ -4,7 +4,7 @@ A review queue for a small cabinet business. Each incoming quote request arrives
 
 It runs as one HTML page with no build step and no server. It is modeled on Palantir Foundry's objects, links and actions, so it can be ported there later. It does not run on Foundry.
 
-> **All data is SYNTHETIC: made up on purpose, because we don't publish our customers' information.** The rules come from how QBC sorts its quote requests every day. Every name, phone (555-01xx), email (example domains) and message is invented, by `scripts/generate.js` or by hand to `docs/BLIND-SPEC.md`. Cities and ZIP codes are real places, used only to test the service-area rule. No real customer data and no data from any employer is used.
+> **All data is SYNTHETIC: made up on purpose, because we don't publish our customers' information.** QBC uses it every day to sort its incoming quote requests. Every name, phone (555-01xx), email (example domains) and message is invented, by `scripts/generate.js` or by hand to `docs/BLIND-SPEC.md`. Cities and ZIP codes are real places, used only to test the service-area rule. No real customer data and no data from any employer is used.
 
 ![The review queue: what came in, the suggested action and why, the draft, and one-click approve](screenshots/review-queue.png)
 
