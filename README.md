@@ -4,7 +4,7 @@ Lead Sorter reads each new quote request for a small cabinet business and picks 
 
 It is a standalone prototype: one HTML file, no build step, no server. It is modeled on Palantir Foundry's ontology (object types, link types and action types) so it can be ported into Foundry later.
 
-> **All data is SYNTHETIC: made up on purpose, because we don't publish our customers' information.** Every name, request and trade partner in this repo is invented; the cities are real places, used only to test the service-area rule. The rules come from how QBC sorts its quote requests every day. No real customer data and no data from any employer is used.
+> **All data is SYNTHETIC: made up on purpose, because we don't publish our customers' information.** Every name, request and trade partner in this repo is invented; the cities are real places, used only to test the service-area rule. QBC uses it every day to sort its incoming quote requests. No real customer data and no data from any employer is used.
 
 ![The queue sorted by score, with one request open](screenshots/overview.png)
 
