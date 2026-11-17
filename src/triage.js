@@ -1,4 +1,4 @@
-/* Quote Triage, step 2: the rules. Score, lane, what to ask for, urgency, duplicates.
+/* Lead Sorter, step 2: the rules. Score, lane, what to ask for, urgency, duplicates.
  *
  * Rules decide; the model only writes. A lane has money attached (a measure trip, a salesman's call,
  * a customer measuring their own kitchen), so it comes from rules that can be tested line by line.

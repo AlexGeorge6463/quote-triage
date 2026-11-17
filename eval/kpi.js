@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Business KPIs for Quote Triage, on SYNTHETIC data only.
+/* Business KPIs for Lead Sorter, on SYNTHETIC data only.
  *
  *   node eval/kpi.js           print the summary
  *   node eval/kpi.js --write   write eval/KPI.md and eval/kpi.json

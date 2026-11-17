@@ -1,4 +1,4 @@
-/* Quote Triage, step 1: intake. Turns a raw web-form submission into a typed QuoteRequest.
+/* Lead Sorter, step 1: intake. Turns a raw web-form submission into a typed QuoteRequest.
  *
  * Every value it reads is recorded with where it came from ("ZIP 32789", "the message: '2 rental
  * houses'"), so the reviewer can see why the rules saw what they saw. In Foundry terms this is the

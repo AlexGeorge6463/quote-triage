@@ -1,4 +1,4 @@
-/* Quote Triage: where a request is, and whether QBC measures there.
+/* Lead Sorter: where a request is, and whether QBC measures there.
  * The measure area (confirmed Nov 11): Orange, Seminole, Osceola and Lake counties. Polk is out.
  * Everywhere else is order-taking on the customer's own measurements.
  *

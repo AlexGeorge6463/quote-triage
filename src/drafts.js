@@ -1,4 +1,4 @@
-/* Quote Triage, step 3: the AI slot. Writes the draft reply for the lane the rules chose.
+/* Lead Sorter, step 3: the AI slot. Writes the draft reply for the lane the rules chose.
  *
  * Today it is templates; no model runs. The contract is what matters, and the tests hold it:
  *   - it receives the decision and may not change the lane;

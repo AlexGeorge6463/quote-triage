@@ -1,6 +1,6 @@
 # Architecture: objects, links and actions
 
-Quote Triage is modeled on the way Palantir Foundry structures operational apps: an **ontology** of object types and the link types between them, **functions** that read and score objects, and **action types** that a person submits and that write back. It is a standalone prototype. **It does not run on Foundry**, it uses no Palantir software, and it is not affiliated with or endorsed by Palantir Technologies. The mapping below shows how each piece would port.
+Lead Sorter is modeled on the way Palantir Foundry structures operational apps: an **ontology** of object types and the link types between them, **functions** that read and score objects, and **action types** that a person submits and that write back. It is a standalone prototype. **It does not run on Foundry**, it uses no Palantir software, and it is not affiliated with or endorsed by Palantir Technologies. The mapping below shows how each piece would port.
 
 > All data is SYNTHETIC. See the README.
 
